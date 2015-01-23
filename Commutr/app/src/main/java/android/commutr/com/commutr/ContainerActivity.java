@@ -1,6 +1,7 @@
 package android.commutr.com.commutr;
 
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,7 +12,21 @@ public class ContainerActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        displayIconInActionBar();
+
+        //TODO reference WebView
+
         setContentView(R.layout.activity_container);
+    }
+
+    private void displayIconInActionBar()
+    {
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(false);
+        ab.setHomeButtonEnabled(true);
+        ab.setIcon(R.drawable.ic_launcher);
+        ab.setDisplayShowHomeEnabled(true);
     }
 
 
