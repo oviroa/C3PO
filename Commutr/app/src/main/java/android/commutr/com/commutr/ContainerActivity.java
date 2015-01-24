@@ -1,34 +1,89 @@
 package android.commutr.com.commutr;
 
+import android.commutr.com.commutr.base.BaseActivity;
+import android.content.Intent;
+import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
+public class ContainerActivity extends BaseActivity {
 
-public class ContainerActivity extends ActionBarActivity {
+    private WebView webView;
+    private SwipeRefreshLayout swipeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        displayIconInActionBar();
-
-        //TODO reference WebView
-
         setContentView(R.layout.activity_container);
+        constructWebView();
+        handlePullRefresh();
     }
 
-    private void displayIconInActionBar()
-    {
-        ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(false);
-        ab.setHomeButtonEnabled(true);
-        ab.setIcon(R.drawable.ic_launcher);
-        ab.setDisplayShowHomeEnabled(true);
+    private void constructWebView(){
+
+        webView = (WebView) findViewById(R.id.CMTRContainerWebView);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setUseWideViewPort(true);
+        buildWebviewEvents();
+        webView.loadUrl(getResources().getString(R.string.CMTRWebViewURL));
+
     }
 
+
+    private void buildWebviewEvents(){
+
+        webView.setWebViewClient
+        (
+                new WebViewClient()
+                {
+                    @Override
+                    public void onPageStarted(WebView view, String url, Bitmap favicon)
+                    {
+                        swipeView.setRefreshing(true);
+                        //hide web view at start
+                        view.setVisibility(View.GONE);
+                        view.startAnimation(AnimationUtils.loadAnimation(view.getContext(), R.anim.fade_out));
+                    }
+
+                    @Override
+                    public void onPageFinished(WebView view, String url)
+                    {
+                        swipeView.setRefreshing(false);
+                        //show when done
+                        view.setVisibility(View.VISIBLE);
+                        view.startAnimation(AnimationUtils.loadAnimation(view.getContext(), R.anim.fade_in));
+                    }
+
+                    @Override
+                    public void onReceivedError (WebView view, int errorCode, String description, String failingUrl)
+                    {
+                        super.onReceivedError(view, errorCode, description, failingUrl);
+                        swipeView.setRefreshing(false);
+                        view.setVisibility(View.GONE);
+                        view.startAnimation(AnimationUtils.loadAnimation(view.getContext(), R.anim.fade_out));
+                    }
+
+                    @Override
+                    public boolean shouldOverrideUrlLoading(WebView view, String url)
+                    {
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setData(Uri.parse(url));
+                        startActivity(i);
+                        return true;
+
+                    }
+
+                }
+        );
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -51,5 +106,25 @@ public class ContainerActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    private void handlePullRefresh(){
+
+        swipeView = (SwipeRefreshLayout) findViewById(R.id.swipe);
+        final TypedArray styledAttributes = getTheme().obtainStyledAttributes(
+                new int[] { android.R.attr.actionBarSize });
+        int actionBarSize = (int) styledAttributes.getDimension(0, 0);
+        styledAttributes.recycle();
+
+        swipeView.setProgressViewOffset(true, actionBarSize, actionBarSize + getResources().getInteger(R.integer.pull_refresh_offset));
+
+        swipeView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                webView.reload();
+            }
+        });
+    }
+
 
 }

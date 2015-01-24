@@ -13,7 +13,6 @@ public class CommutrApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
         Logger.warn("Application","started");
     }
 
