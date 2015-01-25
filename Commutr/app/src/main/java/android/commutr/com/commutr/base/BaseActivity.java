@@ -1,7 +1,7 @@
 package android.commutr.com.commutr.base;
 
 import android.commutr.com.commutr.R;
-import android.commutr.com.commutr.Utils.TypefaceSpan;
+import android.commutr.com.commutr.utils.TypefaceSpan;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
