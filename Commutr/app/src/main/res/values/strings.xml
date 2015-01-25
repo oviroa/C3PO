@@ -5,12 +5,13 @@
     <string name="action_settings">Settings</string>
 
     <!-- webview entry url -->
-    <string name="CMTRWebViewURL">http://www.getcommutr.com</string>
+    <string name="CMTRWebViewURL">http://www.getcommutr.com/?id=</string>
 
     <string name="title_activity_base">BaseActivity</string>
 
     <!--data dod not load - message-->
     <string name="web_view_timeout_message">Traffic jam! Please pull and release to try again!</string>
+    <string name="no_internet_message">Traffic jam! Internet access on your device may not be enabled!</string>
 
 
 
