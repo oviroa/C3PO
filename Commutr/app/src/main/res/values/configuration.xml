@@ -3,4 +3,5 @@
 
     <color name="top_bar_background">#3260D2</color>
     <integer name="pull_refresh_offset">100</integer>
+    <integer name="web_view_load_timeout">13000</integer>
 </resources>

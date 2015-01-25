@@ -1,5 +1,6 @@
 package android.commutr.com.commutr;
 
+import android.commutr.com.commutr.Utils.DisplayMessenger;
 import android.commutr.com.commutr.base.BaseActivity;
 import android.content.Intent;
 import android.content.res.TypedArray;
@@ -18,6 +19,7 @@ public class ContainerActivity extends BaseActivity {
 
     private WebView webView;
     private SwipeRefreshLayout swipeView;
+    private boolean webViewLoadTimeout = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,48 +34,73 @@ public class ContainerActivity extends BaseActivity {
         webView = (WebView) findViewById(R.id.CMTRContainerWebView);
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setUseWideViewPort(true);
-        buildWebviewEvents();
+        buildWebViewEvents();
         webView.loadUrl(getResources().getString(R.string.CMTRWebViewURL));
 
     }
 
-
-    private void buildWebviewEvents(){
+    private void buildWebViewEvents(){
 
         webView.setWebViewClient
         (
-                new WebViewClient()
-                {
+                new WebViewClient() {
+
                     @Override
-                    public void onPageStarted(WebView view, String url, Bitmap favicon)
-                    {
+                    public void onPageStarted(WebView view, String url, Bitmap favicon) {
                         swipeView.setRefreshing(true);
                         //hide web view at start
                         view.setVisibility(View.GONE);
                         view.startAnimation(AnimationUtils.loadAnimation(view.getContext(), R.anim.fade_out));
+                        handleTimeout(view);
+
+                    }
+
+                    private void handleTimeout(final WebView view) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Thread.sleep(getResources().getInteger(R.integer.web_view_load_timeout));
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                if (webViewLoadTimeout) {
+
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            swipeView.setRefreshing(false);
+                                            view.stopLoading();
+                                            DisplayMessenger.showBasicToast
+                                                    (getApplicationContext(),
+                                                            getResources().getString(R.string.web_view_timeout_message));
+                                        }
+                                    });
+                                }
+                            }
+                        }).start();
                     }
 
                     @Override
-                    public void onPageFinished(WebView view, String url)
-                    {
+                    public void onPageFinished(WebView view, String url) {
                         swipeView.setRefreshing(false);
+                        webViewLoadTimeout = false;
                         //show when done
                         view.setVisibility(View.VISIBLE);
                         view.startAnimation(AnimationUtils.loadAnimation(view.getContext(), R.anim.fade_in));
                     }
 
                     @Override
-                    public void onReceivedError (WebView view, int errorCode, String description, String failingUrl)
-                    {
+                    public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                         super.onReceivedError(view, errorCode, description, failingUrl);
+                        webViewLoadTimeout = false;
                         swipeView.setRefreshing(false);
                         view.setVisibility(View.GONE);
                         view.startAnimation(AnimationUtils.loadAnimation(view.getContext(), R.anim.fade_out));
                     }
 
                     @Override
-                    public boolean shouldOverrideUrlLoading(WebView view, String url)
-                    {
+                    public boolean shouldOverrideUrlLoading(WebView view, String url) {
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(url));
                         startActivity(i);
@@ -121,6 +148,7 @@ public class ContainerActivity extends BaseActivity {
         swipeView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                webViewLoadTimeout = true;
                 webView.reload();
             }
         });
