@@ -1,6 +1,9 @@
 package android.commutr.com.commutr;
 
-import android.commutr.com.commutr.Utils.DisplayMessenger;
+import android.commutr.com.commutr.utils.ClientUtility;
+import android.commutr.com.commutr.utils.DisplayMessenger;
+import android.commutr.com.commutr.utils.Installation;
+import android.commutr.com.commutr.utils.Logger;
 import android.commutr.com.commutr.base.BaseActivity;
 import android.content.Intent;
 import android.content.res.TypedArray;
@@ -27,16 +30,24 @@ public class ContainerActivity extends BaseActivity {
         setContentView(R.layout.activity_container);
         constructWebView();
         handlePullRefresh();
+
+        Logger.warn("LOCO",""+ ClientUtility.isLocationAllowed(this));
     }
 
-    private void constructWebView(){
+    private void constructWebView() {
 
         webView = (WebView) findViewById(R.id.CMTRContainerWebView);
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setUseWideViewPort(true);
         buildWebViewEvents();
-        webView.loadUrl(getResources().getString(R.string.CMTRWebViewURL));
 
+        if (ClientUtility.isNetworkAvailable(this)) {
+            webView.loadUrl(getResources().getString(R.string.CMTRWebViewURL) + Installation.id(this));
+        } else {
+            DisplayMessenger.showBasicToast
+                    (getApplicationContext(),
+                            getResources().getString(R.string.no_internet_message));
+        }
     }
 
     private void buildWebViewEvents(){
@@ -55,8 +66,10 @@ public class ContainerActivity extends BaseActivity {
 
                     }
 
+                    private Thread webViewThread;
+
                     private void handleTimeout(final WebView view) {
-                        new Thread(new Runnable() {
+                        webViewThread = new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 try {
@@ -78,11 +91,14 @@ public class ContainerActivity extends BaseActivity {
                                     });
                                 }
                             }
-                        }).start();
+                        });
+
+                        webViewThread.start();
                     }
 
                     @Override
                     public void onPageFinished(WebView view, String url) {
+                        webViewThread.interrupt();
                         swipeView.setRefreshing(false);
                         webViewLoadTimeout = false;
                         //show when done
@@ -92,6 +108,7 @@ public class ContainerActivity extends BaseActivity {
 
                     @Override
                     public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                        webViewThread.interrupt();
                         super.onReceivedError(view, errorCode, description, failingUrl);
                         webViewLoadTimeout = false;
                         swipeView.setRefreshing(false);
@@ -148,8 +165,16 @@ public class ContainerActivity extends BaseActivity {
         swipeView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                webViewLoadTimeout = true;
-                webView.reload();
+
+                if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
+                    webViewLoadTimeout = true;
+                    webView.reload();
+                } else {
+                    swipeView.setRefreshing(false);
+                    DisplayMessenger.showBasicToast
+                            (getApplicationContext(),
+                                    getResources().getString(R.string.no_internet_message));
+                }
             }
         });
     }

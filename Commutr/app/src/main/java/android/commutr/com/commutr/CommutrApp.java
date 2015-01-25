@@ -1,7 +1,7 @@
 package android.commutr.com.commutr;
 
 import android.app.Application;
-import android.commutr.com.commutr.Utils.Logger;
+import android.commutr.com.commutr.utils.Logger;
 
 /**
  * Created by oviroa on 1/23/15.
