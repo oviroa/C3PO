@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="commute_date">Commute date:</string>
+    <string name="select_commute_date">Pick commute date</string>
+    <string name="select_pickup_arrival">Pickup location arrival</string>
+    <string name="pickup_location">Pickup location:</string>
+    <string name="drop_off_location">Drop off location:</string>
+    <string name="type_of_commuter">Type of commuter</string>
+    <string name="getting_to_the_pickup">Getting to the pickup</string>
+
+    <string-array name="type_of_commuter_options">
+        <item>Unlock driver mode</item>
+        <item>Rider</item>
+    </string-array>
+
+    <string-array name="getting_to_pickup_options">
+        <item>Walking</item>
+        <item>By bike</item>
+        <item>By car</item>
+    </string-array>
+</resources>

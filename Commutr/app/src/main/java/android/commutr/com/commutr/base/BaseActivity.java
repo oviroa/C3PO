@@ -23,6 +23,19 @@ public class BaseActivity extends ActionBarActivity {
         decorateTitle();
     }
 
+    /**
+     * Enhances bade onPause with new transition (fade) that will be used by all activities
+     */
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+
+        //set default transition (fade)
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+
+    }
+
     private void decorateTitle(){
 
         SpannableString spannableString = new SpannableString(getTitle());
