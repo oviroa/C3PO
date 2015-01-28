@@ -4,4 +4,6 @@
     <color name="neutral_background">#FFFFFF</color>
     <integer name="pull_refresh_offset">100</integer>
     <integer name="web_view_load_timeout">13000</integer>
+
+    <integer name="latest_commute_set_time">8</integer>
 </resources>

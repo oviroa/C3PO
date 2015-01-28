@@ -11,6 +11,9 @@
     <!-- data dod not load - message -->
     <string name="web_view_timeout_message">Traffic jam! Please pull and release to try again!</string>
     <string name="no_internet_message">Traffic jam! Internet access on your device may not be enabled!</string>
-    <string name="title_activity_commute">Your Commute</string>
+    <string name="title_activity_commute">YOUR COMMUTE</string>
+    <string name="confirm_my_commute">Confirm my commute</string>
+
+
 
 </resources>

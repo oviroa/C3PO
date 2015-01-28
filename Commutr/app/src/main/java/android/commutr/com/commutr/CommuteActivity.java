@@ -13,20 +13,53 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.TimePicker;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 
 public class CommuteActivity extends BaseActivity {
+
+    private static Calendar nextAvailableCalendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_commute);
         setSpinners();
+
+        setNextAvailableDate();
     }
 
+
+    private void setNextAvailableDate(){
+
+        nextAvailableCalendar = Calendar.getInstance();
+        int hour = nextAvailableCalendar.get(Calendar.HOUR_OF_DAY);
+        int day = nextAvailableCalendar.get(Calendar.DAY_OF_WEEK);
+
+        //if later than deadline for setting a commute for today, show tommorow
+        if(hour >= getResources().getInteger(R.integer.latest_commute_set_time)){
+            if(day == Calendar.FRIDAY){
+                nextAvailableCalendar.add(Calendar.DATE, 3);
+            } else if(day == Calendar.SATURDAY){
+                nextAvailableCalendar.add(Calendar.DATE, 2);
+            } else {
+                nextAvailableCalendar.add(Calendar.DATE, 1);
+            }
+        }
+
+
+        TextView commuteDateValue = (TextView) findViewById(R.id.commute_date_value);
+        TextView selectedCommuteDate = (TextView) findViewById(R.id.select_commute_date_value);
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM dd ");
+        String currentDate = sdf.format(nextAvailableCalendar.getTime());
+        commuteDateValue.setText(currentDate);
+        selectedCommuteDate.setText(currentDate);
+
+    }
 
     private void setSpinners()
     {
@@ -89,17 +122,27 @@ public class CommuteActivity extends BaseActivity {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current date as the default date in the picker
-            final Calendar c = Calendar.getInstance();
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH);
-            int day = c.get(Calendar.DAY_OF_MONTH);
+            int year = nextAvailableCalendar.get(Calendar.YEAR);
+            int month = nextAvailableCalendar.get(Calendar.MONTH);
+            int day = nextAvailableCalendar.get(Calendar.DAY_OF_MONTH);
 
             // Create a new instance of DatePickerDialog and return it
-            return new DatePickerDialog(getActivity(), this, year, month, day);
+            DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), this, year, month, day);
+            datePickerDialog.getDatePicker().setMinDate(nextAvailableCalendar.getTimeInMillis());
+            return datePickerDialog;
         }
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
-            // Do something with the date chosen by the user
+            TextView selectedCommuteDate = (TextView) getActivity().findViewById(R.id.select_commute_date_value);
+            TextView commuteDateValue = (TextView) getActivity().findViewById(R.id.commute_date_value);
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM dd ");
+            Calendar c = Calendar.getInstance();
+            c.set(Calendar.YEAR,year);
+            c.set(Calendar.MONTH,month);
+            c.set(Calendar.DAY_OF_MONTH,day);
+            String selectedDate = sdf.format(c.getTimeInMillis());
+            selectedCommuteDate.setText(selectedDate);
+            commuteDateValue.setText(selectedDate);
         }
     }
 
@@ -119,7 +162,13 @@ public class CommuteActivity extends BaseActivity {
         }
 
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            // Do something with the time chosen by the user
+            TextView selectetArrivalTime = (TextView) getActivity().findViewById(R.id.pickup_arrival_value);
+            SimpleDateFormat sdf = new SimpleDateFormat("h:m a");
+            Calendar c = Calendar.getInstance();
+            c.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            c.set(Calendar.MINUTE, minute);
+            String selectedTime = sdf.format(c.getTimeInMillis());
+            selectetArrivalTime.setText(selectedTime);
         }
     }
 }
