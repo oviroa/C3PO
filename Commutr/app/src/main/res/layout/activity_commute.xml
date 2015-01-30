@@ -6,232 +6,273 @@
     android:background="@color/top_bar_background"
     android:orientation="vertical">
 
-    <ScrollView
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeContainer"
+        android:background="@color/neutral_background"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:background="@color/neutral_background"
         android:layout_weight="1">
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content">
 
-            <android.support.v7.widget.CardView
-                xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/commute_card_view"
-                android:layout_gravity="center"
+            <LinearLayout
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                card_view:cardCornerRadius="4dp"
-                android:layout_marginTop="@dimen/activity_vertical_margin">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-                <RelativeLayout
+                <android.support.v7.widget.CardView
+                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/commute_card_view"
+                    android:layout_gravity="center"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:padding="@dimen/activity_vertical_margin">
+                    android:layout_height="wrap_content"
+                    card_view:cardCornerRadius="4dp"
+                    android:layout_marginTop="@dimen/activity_vertical_margin">
 
-                    <ImageView
-                        android:id = "@+id/commute_date_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="@string/commute_date"
-                        android:src="@drawable/set_commute_date" />
-
-                    <android.commutr.com.commutr.base.CommutrTextView
-                        android:id="@+id/commute_date_value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/prompt_email"
-                        android:text="Mon, Jan 26"
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         android:gravity="center"
-                        android:layout_toRightOf="@id/commute_date_label"
-                        android:layout_alignTop="@id/commute_date_label"
-                        android:layout_alignBottom="@id/commute_date_label"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                        android:padding="@dimen/activity_vertical_margin">
 
-                    <!--__________________-->
+                        <ImageView
+                            android:id = "@+id/commute_date_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/commute_date"
+                            android:src="@drawable/set_commute_date" />
 
-                    <ImageView
-                        android:id = "@+id/drop_off_location_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="@string/drop_off_location"
-                        android:layout_alignLeft="@id/commute_date_label"
-                        android:layout_alignRight="@id/commute_date_label"
-                        android:layout_below="@id/commute_date_label"
-                        android:src="@drawable/set_commute_pickup"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+                        <android.commutr.com.commutr.base.CommutrTextView
+                            android:id="@+id/commute_date_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/prompt_email"
+                            android:text="Mon, Jan 26"
+                            android:gravity="center"
+                            android:layout_toRightOf="@id/commute_date_label"
+                            android:layout_alignTop="@id/commute_date_label"
+                            android:layout_alignBottom="@id/commute_date_label"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-                    <android.commutr.com.commutr.base.CommutrTextView
-                        android:id="@+id/drop_off_location_value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/prompt_email"
-                        android:text="Orinda 1"
-                        android:layout_toRightOf="@id/drop_off_location_label"
-                        android:gravity="center"
-                        android:layout_alignTop="@id/drop_off_location_label"
-                        android:layout_alignBottom="@id/drop_off_location_label"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                        <!--__________________-->
 
-                    <!--__________________-->
+                        <ImageView
+                            android:id = "@+id/drop_off_location_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/drop_off_location"
+                            android:layout_alignLeft="@id/commute_date_label"
+                            android:layout_alignRight="@id/commute_date_label"
+                            android:layout_below="@id/commute_date_label"
+                            android:src="@drawable/set_commute_pickup"
+                            android:layout_marginTop="@dimen/activity_vertical_margin"/>
 
-                    <ImageView
-                        android:id = "@+id/pickup_location_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="@string/pickup_location"
-                        android:layout_alignLeft="@id/commute_date_label"
-                        android:layout_alignRight="@id/commute_date_label"
-                        android:layout_below="@id/drop_off_location_label"
-                        android:src="@drawable/set_commute_dropoff"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+                        <android.commutr.com.commutr.base.CommutrTextView
+                            android:id="@+id/drop_off_location_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/prompt_email"
+                            android:text="Orinda 1"
+                            android:layout_toRightOf="@id/drop_off_location_label"
+                            android:gravity="center"
+                            android:layout_alignTop="@id/drop_off_location_label"
+                            android:layout_alignBottom="@id/drop_off_location_label"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-                    <android.commutr.com.commutr.base.CommutrTextView
-                        android:id="@+id/pickup_location_value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/prompt_email"
-                        android:text="Freemont St"
-                        android:layout_toRightOf="@id/pickup_location_label"
-                        android:gravity="center"
-                        android:layout_alignTop="@id/pickup_location_label"
-                        android:layout_alignBottom="@id/pickup_location_label"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                        <!--__________________-->
 
-                </RelativeLayout>
+                        <ImageView
+                            android:id = "@+id/pickup_location_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/pickup_location"
+                            android:layout_alignLeft="@id/commute_date_label"
+                            android:layout_alignRight="@id/commute_date_label"
+                            android:layout_below="@id/drop_off_location_label"
+                            android:src="@drawable/set_commute_dropoff"
+                            android:layout_marginTop="@dimen/activity_vertical_margin"/>
 
-            </android.support.v7.widget.CardView>
+                        <android.commutr.com.commutr.base.CommutrTextView
+                            android:id="@+id/pickup_location_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/prompt_email"
+                            android:text="Freemont St"
+                            android:layout_toRightOf="@id/pickup_location_label"
+                            android:gravity="center"
+                            android:layout_alignTop="@id/pickup_location_label"
+                            android:layout_alignBottom="@id/pickup_location_label"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+                    </RelativeLayout>
+
+                </android.support.v7.widget.CardView>
 
 
-            <android.support.v7.widget.CardView
-                xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/input_card_view"
-                android:layout_gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                card_view:cardCornerRadius="4dp"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:layout_marginBottom="@dimen/activity_vertical_margin">
-
-                <RelativeLayout
+                <android.support.v7.widget.CardView
+                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/input_card_view"
+                    android:layout_gravity="center"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingTop="@dimen/activity_vertical_margin"
-                    android:paddingBottom="@dimen/activity_vertical_margin"
-                    android:padding="@dimen/activity_vertical_margin">
+                    android:layout_height="wrap_content"
+                    card_view:cardCornerRadius="4dp"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_marginBottom="@dimen/activity_vertical_margin">
 
-                    <Button
-                        android:id="@+id/pickup_location_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/select_commute_date"
-                        android:onClick="showDatePickerDialog"
-                        android:textColor="@color/neutral_background"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"
-                        style="@style/ButtonAppTheme"/>
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingTop="@dimen/activity_vertical_margin"
+                        android:paddingBottom="@dimen/activity_vertical_margin"
+                        android:padding="@dimen/activity_vertical_margin">
 
-                    <android.commutr.com.commutr.base.CommutrTextView
-                        android:id="@+id/select_commute_date_value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/prompt_email"
-                        android:text="Mon, Jan 26"
-                        android:layout_toRightOf="@id/pickup_location_button"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:layout_alignParentRight="true"
-                        android:gravity="right"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:layout_alignBaseline="@id/pickup_location_button"/>
+                        <android.commutr.com.commutr.base.CommutrButton
+                            android:id="@+id/commute_date_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/select_commute_date"
+                            android:onClick="showDatePickerDialog"
+                            android:textColor="@color/neutral_background"
+                            android:layout_marginTop="@dimen/activity_vertical_margin"
+                            android:textStyle="bold"
+                            style="@style/ButtonAppTheme"/>
 
-                    <!--__________________-->
+                        <android.commutr.com.commutr.base.CommutrTextView
+                            android:id="@+id/select_commute_date_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/prompt_email"
+                            android:text="Mon, Jan 26"
+                            android:layout_toRightOf="@id/commute_date_button"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:layout_alignParentRight="true"
+                            android:gravity="right"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:layout_alignBaseline="@id/commute_date_button"/>
 
-                    <Button
-                        android:id="@+id/pickup_arrival_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/select_pickup_arrival"
-                        android:layout_below="@id/pickup_location_button"
-                        android:onClick="showTimePickerDialog"
-                        android:textColor="@color/neutral_background"
-                        style="@style/ButtonAppTheme"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+                        <!--__________________-->
 
-                    <android.commutr.com.commutr.base.CommutrTextView
-                        android:id="@+id/pickup_arrival_value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/prompt_email"
-                        android:text="7:30 AM"
-                        android:layout_below="@id/select_commute_date_value"
-                        android:layout_alignParentRight="true"
-                        android:gravity="right"
-                        android:layout_toRightOf="@id/pickup_arrival_button"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:layout_alignBaseline="@id/pickup_arrival_button"/>
+                        <android.commutr.com.commutr.base.CommutrButton
+                            android:id="@+id/pickup_arrival_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/select_pickup_arrival"
+                            android:layout_below="@id/commute_date_button"
+                            android:onClick="showTimePickerDialog"
+                            android:textColor="@color/neutral_background"
+                            android:textStyle="bold"
+                            style="@style/ButtonAppTheme"
+                            android:layout_marginTop="@dimen/activity_vertical_margin"/>
 
-                    <!--__________________-->
+                        <android.commutr.com.commutr.base.CommutrTextView
+                            android:id="@+id/pickup_arrival_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/prompt_email"
+                            android:text="7:30 AM"
+                            android:layout_below="@id/select_commute_date_value"
+                            android:layout_alignParentRight="true"
+                            android:gravity="right"
+                            android:layout_toRightOf="@id/pickup_arrival_button"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:layout_alignBaseline="@id/pickup_arrival_button"/>
 
-                    <android.commutr.com.commutr.base.CommutrTextView
-                        android:id = "@+id/commuter_type_label"
-                        android:text="@string/type_of_commuter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/pickup_arrival_button"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+                        <!--__________________-->
 
-                    <Spinner
-                        android:id="@+id/commuter_type_spinner"
-                        android:layout_width="wrap_content"
-                        android:layout_alignBottom="@id/commuter_type_label"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:gravity="right"
-                        style="@style/SpinnerAppTheme"/>
+                        <android.commutr.com.commutr.base.CommutrTextView
+                            android:id = "@+id/commuter_type_label"
+                            android:text="@string/type_of_commuter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/pickup_arrival_button"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:layout_marginTop="@dimen/activity_vertical_margin"/>
 
-                    <!--__________________-->
+                        <Spinner
+                            android:id="@+id/commuter_type_spinner"
+                            android:layout_width="wrap_content"
+                            android:layout_alignBottom="@id/commuter_type_label"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:gravity="right"
+                            style="@style/SpinnerAppTheme"/>
 
-                    <android.commutr.com.commutr.base.CommutrTextView
-                        android:id = "@+id/getting_to_pickup_label"
-                        android:text="@string/getting_to_the_pickup"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/commuter_type_label"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+                        <!--__________________-->
 
-                    <Spinner
-                        android:id="@+id/getting_to_pickup_spinner"
-                        android:layout_width="wrap_content"
-                        android:layout_alignBottom="@id/getting_to_pickup_label"
-                        android:layout_alignParentRight="true"
-                        android:gravity="right"
-                        android:layout_height="wrap_content"
-                        style="@style/SpinnerAppTheme"/>
+                        <android.commutr.com.commutr.base.CommutrTextView
+                            android:id = "@+id/getting_to_pickup_label"
+                            android:text="@string/getting_to_the_pickup"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/commuter_type_label"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:layout_marginTop="@dimen/activity_vertical_margin"/>
+
+                        <Spinner
+                            android:id="@+id/getting_to_pickup_spinner"
+                            android:layout_width="wrap_content"
+                            android:layout_alignBottom="@id/getting_to_pickup_label"
+                            android:layout_alignParentRight="true"
+                            android:gravity="right"
+                            android:layout_height="wrap_content"
+                            style="@style/SpinnerAppTheme"/>
 
 
-                </RelativeLayout>
+                    </RelativeLayout>
 
-            </android.support.v7.widget.CardView>
+                </android.support.v7.widget.CardView>
 
-       </LinearLayout>
+           </LinearLayout>
 
-    </ScrollView>
+        </ScrollView>
 
-    <Button
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <android.commutr.com.commutr.base.CommutrButton
+        android:id = "@+id/confirm_commute_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/confirm_my_commute"
+        android:textStyle="bold"
         android:textColor="@color/neutral_background"
         style="@style/ButtonAppTheme"/>
+
+    <ImageButton
+        android:visibility="gone"
+        android:id="@+id/edit_commute"
+        android:layout_marginTop="@dimen/bottom_offset"
+        android:layout_marginRight="@dimen/right_offset"
+        android:layout_width="@dimen/round_button_diameter"
+        android:layout_height="@dimen/round_button_diameter"
+        android:layout_gravity="end|bottom"
+        android:layout_marginBottom="@dimen/add_button_margin"
+        android:layout_marginEnd="@dimen/add_button_margin"
+        android:tint="@android:color/white"
+        android:src="@android:drawable/ic_menu_edit"
+        android:background="@drawable/oval"
+        tools:ignore="RtlCompat" />
+
+    <ImageButton
+        android:visibility="gone"
+        android:id="@+id/cancel_commute"
+        android:layout_marginTop="@dimen/bottom_double_offset"
+        android:layout_marginRight="@dimen/right_offset"
+        android:layout_width="@dimen/round_button_diameter"
+        android:layout_height="@dimen/round_button_diameter"
+        android:layout_gravity="end|bottom"
+        android:layout_marginBottom="@dimen/add_button_margin"
+        android:layout_marginEnd="@dimen/add_button_margin"
+        android:tint="@android:color/white"
+        android:src="@android:drawable/ic_input_delete"
+        android:background="@drawable/oval_red"
+        tools:ignore="RtlCompat" />
 
 </LinearLayout>

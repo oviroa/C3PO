@@ -6,4 +6,14 @@
     <integer name="web_view_load_timeout">13000</integer>
 
     <integer name="latest_commute_set_time">8</integer>
+
+    <string name="commutr_preferences">commutrPreferences</string>
+    <string name="commutr_email_address">commutrEmailAddress</string>
+    <string name="commutr_current_commute">commutrCurrentCommute</string>
+
+
+    <string name="default_pickup_location">TEST</string>
+    <!--<string name="default_pickup_location">ORND1</string>-->
+    <string name="default_dropoff_location">SFFIDI</string>
+
 </resources>

@@ -26,19 +26,25 @@ public class LoginActivity extends BaseActivity{
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
 
-        // Set up the login form.
-        emailView = (AutoCompleteTextView) findViewById(R.id.email);
-        addEmailsToAutoComplete(ClientUtility.getUserEmails(this));
+        if(getDataManager().retrieveUserEmail(getApplicationContext()) != null){
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
+            logIn();
+        }
+        else {
+            setContentView(R.layout.activity_login);
+            // Set up the login form.
+            emailView = (AutoCompleteTextView) findViewById(R.id.email);
+            addEmailsToAutoComplete(ClientUtility.getUserEmails(this));
+
+            Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+            mEmailSignInButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    attemptLogin();
+                }
+            });
+        }
 
     }
 
@@ -77,6 +83,8 @@ public class LoginActivity extends BaseActivity{
             // form field with an error.
             focusView.requestFocus();
         } else {
+
+            getDataManager().storeUserEmail(emailView.getText().toString(), getApplicationContext());
             // perform the user login attempt.
             logIn();
         }

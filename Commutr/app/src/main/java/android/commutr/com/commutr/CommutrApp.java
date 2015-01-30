@@ -1,6 +1,7 @@
 package android.commutr.com.commutr;
 
 import android.app.Application;
+import android.commutr.com.commutr.model.Commute;
 import android.commutr.com.commutr.utils.Logger;
 
 /**
@@ -8,6 +9,7 @@ import android.commutr.com.commutr.utils.Logger;
  * Application singleton
  * Used to store state and context of the application when running
  */
+
 public class CommutrApp extends Application {
 
     @Override
@@ -16,4 +18,25 @@ public class CommutrApp extends Application {
         Logger.warn("Application","started");
     }
 
+    private String userEmail;
+
+    private Commute currentCommute;
+
+
+    public String getUserEmail(){
+        return this.userEmail;
+    }
+
+    public void setUserEmail(String userEmail){
+        this.userEmail = userEmail;
+    }
+
+    public void setCurrentCommute(Commute currentCommute) {
+        this.currentCommute = currentCommute;
+    }
+
+    public Commute getCurrentCommute() {
+
+        return currentCommute;
+    }
 }

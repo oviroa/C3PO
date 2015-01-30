@@ -1,6 +1,7 @@
 package android.commutr.com.commutr.base;
 
 import android.commutr.com.commutr.R;
+import android.commutr.com.commutr.managers.DataManager;
 import android.commutr.com.commutr.utils.TypefaceSpan;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -51,5 +52,14 @@ public class BaseActivity extends ActionBarActivity {
         ab.setIcon(R.drawable.ic_launcher);
         ab.setDisplayShowHomeEnabled(true);
     }
+
+    /**
+     * Retrieve instance of proxy that handles all model operations
+     * @return
+     */
+    public DataManager getDataManager(){
+        return DataManager.getInstance();
+    }
+
 
 }
