@@ -1,4 +1,4 @@
-package android.commutr.com.commutr.Utils;
+package android.commutr.com.commutr.utils;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -7,7 +7,7 @@ import android.text.style.MetricAffectingSpan;
 import android.support.v4.util.LruCache;
 
 /**
- * Style a {@link Spannable} with a custom {@link Typeface}.
+ * Style a Spannable} with a custom {@link Typeface}.
  *
  * @author Tristan Waddington
  */
@@ -20,7 +20,7 @@ public class TypefaceSpan extends MetricAffectingSpan
     private Typeface mTypeface;
 
     /**
-     * Load the {@link Typeface} and apply to a {@link Spannable}.
+     * Load the {@link Typeface} and apply to a Spannable.
      */
     public TypefaceSpan(Context context, String typefaceName)
     {

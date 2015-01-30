@@ -1,4 +1,4 @@
-package android.commutr.com.commutr.Utils;
+package android.commutr.com.commutr.utils;
 
 import android.content.Context;
 import android.view.Gravity;
