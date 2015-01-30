@@ -1,0 +1,19 @@
+<resources>
+
+    <style name="TranslucentStatusBar" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="colorPrimary">@color/top_bar_background</item>
+        <item name="android:dialogTheme">@style/CMTRDialogTheme</item>
+    </style>
+
+    <style name="CMTRDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+
+        <item name="android:colorPrimary">@color/top_bar_background</item>
+        <item name="android:colorPrimaryDark">@color/top_bar_background</item>
+        <item name="android:colorAccent">@color/top_bar_background</item>
+
+    </style>
+</resources>
