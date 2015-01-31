@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.commutr.com.commutr.base.BaseActivity;
 import android.commutr.com.commutr.model.Commute;
+import android.commutr.com.commutr.utils.ClientUtility;
+import android.commutr.com.commutr.utils.DisplayMessenger;
 import android.commutr.com.commutr.utils.Installation;
 import android.commutr.com.commutr.utils.Logger;
 import android.content.res.TypedArray;
@@ -12,8 +14,6 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.format.DateFormat;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
@@ -47,6 +47,8 @@ public class CommuteActivity extends BaseActivity {
 
     private static Calendar nextAvailableCalendar;
     private static Calendar selectedPickupDateTime;
+
+    private boolean viewIsInEditMode = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +108,24 @@ public class CommuteActivity extends BaseActivity {
 
     private void cancelCommute()
     {
+        Commute currentCommute = getDataManager().getCachedCommute(getApplicationContext());
+
+        currentCommute.setConfirmTime(0L);
+        currentCommute.setCancelTime(System.currentTimeMillis() / 1000L);
+
+        if(currentCommute != null) {
+
+            if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
+
+                registerCancelledCommute(currentCommute);
+
+            } else {
+                DisplayMessenger.showBasicToast
+                        (getApplicationContext(),
+                                getResources().getString(R.string.no_internet_message));
+            }
+
+        }
 
     }
 
@@ -117,11 +137,21 @@ public class CommuteActivity extends BaseActivity {
 
     private void confirmCommute()
     {
-        //disable form
-        disableFormElements();
+        if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
 
-        //save commute
-        saveCommute(buildCommute());
+            //disable form
+            disableFormElements();
+
+            //save commute
+            saveCommute(buildCommute());
+
+        } else {
+            DisplayMessenger.showBasicToast
+                    (getApplicationContext(),
+                            getResources().getString(R.string.no_internet_message));
+        }
+
+
 
 
     }
@@ -152,8 +182,58 @@ public class CommuteActivity extends BaseActivity {
     }
 
 
-    private void saveCommute(final Commute commute)
-    {
+    private void registerCancelledCommute(final Commute commute){
+
+        if(commuteVolley == null) {
+            commuteVolley = Volley.newRequestQueue(getApplicationContext());
+        }
+
+        swipeView.setRefreshing(true);
+
+        getDataManager().storeCommute
+                (
+                        commute,
+                        getApplicationContext(),
+                        commuteVolley,
+                        TAG,
+                        new Listener<JSONObject>() {
+
+                            public void onResponse(JSONObject result) {
+
+                                Logger.warn("RESPONSE"," OK :: "+result.toString());
+
+                                getDataManager().cacheCommute(commute,getApplicationContext());
+                                swipeView.setRefreshing(false);
+                                DisplayMessenger.showBasicToast
+                                        (getApplicationContext(),
+                                                getResources().getString(R.string.commute_cancelled_message));
+                                hideFloatingUI();
+                                enableFormElements();
+
+                                getDataManager().cacheCommute(null, getApplicationContext());
+
+                            }
+                        },
+                        new ErrorListener() {
+                            public void onErrorResponse(VolleyError error) {
+
+                                Logger.warn("RESPONSE"," ERROR :: "+ error.getMessage());
+
+                                swipeView.setRefreshing(false);
+
+                                DisplayMessenger.showBasicToast
+                                        (getApplicationContext(),
+                                                getResources().getString(R.string.commute_error_message));
+
+                            }
+                        }
+                );
+
+    }
+
+
+
+    private void saveCommute(final Commute commute) {
         if(commuteVolley == null) {
             commuteVolley = Volley.newRequestQueue(getApplicationContext());
         }
@@ -172,6 +252,9 @@ public class CommuteActivity extends BaseActivity {
 
                                 getDataManager().cacheCommute(commute,getApplicationContext());
                                 swipeView.setRefreshing(false);
+                                DisplayMessenger.showBasicToast
+                                        (getApplicationContext(),
+                                                getResources().getString(R.string.commute_confirmed_message));
                                 showFloatingUI();
 
                             }
@@ -179,12 +262,12 @@ public class CommuteActivity extends BaseActivity {
                         new ErrorListener() {
                             public void onErrorResponse(VolleyError error) {
 
-                                swipeView.setRefreshing(true);
+                                swipeView.setRefreshing(false);
 
-                                //TODO show error message
+                                DisplayMessenger.showBasicToast
+                                        (getApplicationContext(),
+                                                getResources().getString(R.string.commute_error_message));
 
-                                Logger.warn("RESPONSE","EROOR");
-                                hideFloatingUI();
                                 enableFormElements();
                             }
                         }
@@ -206,6 +289,7 @@ public class CommuteActivity extends BaseActivity {
         myCommute.setDropoffLocation(getResources().getString(R.string.default_dropoff_location));
         myCommute.setScheduledPickupArrivalTime(getScheduledPickupArrivalTime());
         myCommute.setConfirmTime(System.currentTimeMillis() / 1000L);
+        myCommute.setCancelTime(0L);
 
         return myCommute;
 
@@ -220,17 +304,47 @@ public class CommuteActivity extends BaseActivity {
 
 
         if(gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.walking))) {
-            return 1;
+            return getResources().getInteger(R.integer.walking);
         }
         else if (gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.bike))) {
-            return 2;
+            return getResources().getInteger(R.integer.bike);
         }
         else if (gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.car))) {
-            return 5;
+            return getResources().getInteger(R.integer.car);
         }
 
         //error
         return -1;
+    }
+
+    private void setTransportModeToPickupSpinner(int transportModeToPickup)
+    {
+        //getting to pickup
+        Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
+
+        if(transportModeToPickup == getResources().getInteger(R.integer.walking)) {
+            gettingToPickupSpinner.setSelection(0, true);
+        }
+        else if (transportModeToPickup == getResources().getInteger(R.integer.bike)) {
+            gettingToPickupSpinner.setSelection(1, true);
+        }
+        else if (transportModeToPickup == getResources().getInteger(R.integer.car))  {
+            gettingToPickupSpinner.setSelection(2, true);
+        }
+    }
+
+    private void setTransportModeToDropoff(int transportModeToDropOff)
+    {
+        //getting to pickup
+        Spinner gettingToDropOffSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
+
+        if(transportModeToDropOff == getResources().getInteger(R.integer.driver)) {
+            gettingToDropOffSpinner.setSelection(0,true);
+        }
+        else if (transportModeToDropOff == getResources().getInteger(R.integer.rider)) {
+            gettingToDropOffSpinner.setSelection(1,true);
+        }
+
     }
 
     private int getTransportModeToDropoff() {
@@ -239,10 +353,10 @@ public class CommuteActivity extends BaseActivity {
         Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
 
         if(commuterTypeSpinner.getSelectedItem().equals(getResources().getString(R.string.driver))) {
-            return 3;
+            return getResources().getInteger(R.integer.driver);
         }
         else if (commuterTypeSpinner.getSelectedItem().equals(getResources().getString(R.string.rider))) {
-            return 4;
+            return getResources().getInteger(R.integer.rider);
         }
 
         return -1;
@@ -255,6 +369,9 @@ public class CommuteActivity extends BaseActivity {
 
     private void disableFormElements()
     {
+
+        viewIsInEditMode = false;
+
         //pick commute date
         Button pickupArrivalButton = (Button) findViewById(R.id.pickup_arrival_button);
         pickupArrivalButton.setEnabled(false);
@@ -279,6 +396,9 @@ public class CommuteActivity extends BaseActivity {
 
     private void enableFormElements()
     {
+
+        viewIsInEditMode = true;
+
         //pick commute date
         Button pickupArrivalButton = (Button) findViewById(R.id.pickup_arrival_button);
         pickupArrivalButton.setEnabled(true);
@@ -348,28 +468,6 @@ public class CommuteActivity extends BaseActivity {
         spinner.setAdapter(adapter);
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_commute, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     public void showDatePickerDialog(View v) {
         DialogFragment newFragment = new DatePickerFragment();
@@ -442,7 +540,6 @@ public class CommuteActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
 
-        //TODO check if commute cached
         Commute currentCommute = getDataManager().getCachedCommute(getApplicationContext());
 
 
@@ -480,10 +577,14 @@ public class CommuteActivity extends BaseActivity {
 
 
         //type of commuter
+        setTransportModeToDropoff(commute.getTransportModeToDropoff());
         //getting to pickup//
+        setTransportModeToPickupSpinner(commute.getTransportModeToPickup());
 
-        disableFormElements();
-        showFloatingUI();
+        if(viewIsInEditMode) {
+            disableFormElements();
+            showFloatingUI();
+        }
 
     }
 }

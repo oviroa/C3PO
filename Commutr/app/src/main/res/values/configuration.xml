@@ -16,4 +16,12 @@
     <!--<string name="default_pickup_location">ORND1</string>-->
     <string name="default_dropoff_location">SFFIDI</string>
 
+
+    <integer name="walking">1</integer>
+    <integer name="bike">2</integer>
+    <integer name="car">5</integer>
+    <integer name="driver">3</integer>
+    <integer name="rider">4</integer>
+
+
 </resources>

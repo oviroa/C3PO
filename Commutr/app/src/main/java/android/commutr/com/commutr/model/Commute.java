@@ -37,6 +37,16 @@ public class Commute implements Serializable
 
     private long confirm_time;
 
+    private long cancel_time;
+
+    public long getCancelTime() {
+        return cancel_time;
+    }
+
+    public void setCancelTime(Long cancel_time){
+        this.cancel_time = cancel_time;
+    }
+
 
     public void setDeviceIdentifier(String device_identifier) {
         this.device_identifier = device_identifier;
