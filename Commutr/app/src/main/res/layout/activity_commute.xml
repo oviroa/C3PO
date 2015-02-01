@@ -253,6 +253,7 @@
         tools:ignore="RtlCompat" />
 
     <ImageButton
+        android:visibility="gone"
         android:id="@+id/cancel_commute"
         android:layout_marginTop="@dimen/bottom_double_offset"
         android:layout_marginRight="@dimen/right_offset"
