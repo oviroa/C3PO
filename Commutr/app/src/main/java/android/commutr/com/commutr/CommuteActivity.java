@@ -9,6 +9,7 @@ import android.commutr.com.commutr.utils.ClientUtility;
 import android.commutr.com.commutr.utils.DisplayMessenger;
 import android.commutr.com.commutr.utils.Installation;
 import android.commutr.com.commutr.utils.Logger;
+import android.content.pm.ActivityInfo;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -49,6 +50,8 @@ public class CommuteActivity extends BaseActivity {
     private static Calendar selectedPickupDateTime;
 
     private boolean viewIsInEditMode = true;
+
+    private int screenOrientation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,6 +193,9 @@ public class CommuteActivity extends BaseActivity {
 
         swipeView.setRefreshing(true);
 
+        //block screen orientation change
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+
         getDataManager().storeCommute
                 (
                         commute,
@@ -201,6 +207,8 @@ public class CommuteActivity extends BaseActivity {
                             public void onResponse(JSONObject result) {
 
                                 Logger.warn("RESPONSE"," OK :: "+result.toString());
+
+                                setRequestedOrientation(screenOrientation);
 
                                 getDataManager().cacheCommute(commute,getApplicationContext());
                                 swipeView.setRefreshing(false);
@@ -218,6 +226,8 @@ public class CommuteActivity extends BaseActivity {
                             public void onErrorResponse(VolleyError error) {
 
                                 Logger.warn("RESPONSE"," ERROR :: "+ error.getMessage());
+
+                                setRequestedOrientation(screenOrientation);
 
                                 swipeView.setRefreshing(false);
 
@@ -240,6 +250,9 @@ public class CommuteActivity extends BaseActivity {
 
         swipeView.setRefreshing(true);
 
+        //block screen orientation change
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+
         getDataManager().storeCommute
                 (
                         commute,
@@ -250,6 +263,7 @@ public class CommuteActivity extends BaseActivity {
 
                             public void onResponse(JSONObject result) {
 
+                                setRequestedOrientation(screenOrientation);
                                 getDataManager().cacheCommute(commute,getApplicationContext());
                                 swipeView.setRefreshing(false);
                                 DisplayMessenger.showBasicToast
@@ -261,6 +275,8 @@ public class CommuteActivity extends BaseActivity {
                         },
                         new ErrorListener() {
                             public void onErrorResponse(VolleyError error) {
+
+                                setRequestedOrientation(screenOrientation);
 
                                 swipeView.setRefreshing(false);
 
@@ -438,13 +454,13 @@ public class CommuteActivity extends BaseActivity {
             nextAvailableCalendar.add(Calendar.DATE, 1);
             nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
             nextAvailableCalendar.set(Calendar.MINUTE,0);
-        }
+        } //Friday
         else if(hour >= getResources().getInteger(R.integer.latest_commute_set_time)){
             if(day == Calendar.FRIDAY){
                 nextAvailableCalendar.add(Calendar.DATE, 3);
                 nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
                 nextAvailableCalendar.set(Calendar.MINUTE,0);
-            }
+            }//rest of week
             else{
                 nextAvailableCalendar.add(Calendar.DATE, 1);
                 nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
@@ -559,6 +575,8 @@ public class CommuteActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        screenOrientation = getRequestedOrientation();
 
         Commute currentCommute = getDataManager().getCachedCommute(getApplicationContext());
 
