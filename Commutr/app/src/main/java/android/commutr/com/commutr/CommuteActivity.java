@@ -65,7 +65,7 @@ public class CommuteActivity extends BaseActivity {
 
         handleButtonEvents();
 
-        selectedPickupDateTime = Calendar.getInstance();
+        selectedPickupDateTime = nextAvailableCalendar;
     }
 
     private void handleButtonEvents()
@@ -427,15 +427,30 @@ public class CommuteActivity extends BaseActivity {
         int hour = nextAvailableCalendar.get(Calendar.HOUR_OF_DAY);
         int day = nextAvailableCalendar.get(Calendar.DAY_OF_WEEK);
 
-        //if later than deadline for setting a commute for today, show tommorow
-        if(hour >= getResources().getInteger(R.integer.latest_commute_set_time)){
+
+        //weekend
+        if(day == Calendar.SATURDAY){
+            nextAvailableCalendar.add(Calendar.DATE, 2);
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,7);
+            nextAvailableCalendar.set(Calendar.MINUTE,0);
+
+        } else if(day == Calendar.SUNDAY) {
+            nextAvailableCalendar.add(Calendar.DATE, 1);
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,7);
+            nextAvailableCalendar.set(Calendar.MINUTE,0);
+        }
+        else if(hour >= getResources().getInteger(R.integer.latest_commute_set_time)){
             if(day == Calendar.FRIDAY){
                 nextAvailableCalendar.add(Calendar.DATE, 3);
-            } else if(day == Calendar.SATURDAY){
-                nextAvailableCalendar.add(Calendar.DATE, 2);
-            } else {
-                nextAvailableCalendar.add(Calendar.DATE, 1);
+                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,7);
+                nextAvailableCalendar.set(Calendar.MINUTE,0);
             }
+            else{
+                nextAvailableCalendar.add(Calendar.DATE, 1);
+                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,7);
+                nextAvailableCalendar.set(Calendar.MINUTE,0);
+            }
+
         }
 
 
@@ -445,6 +460,11 @@ public class CommuteActivity extends BaseActivity {
         String currentDate = sdf.format(nextAvailableCalendar.getTime());
         commuteDateValue.setText(currentDate);
         selectedCommuteDate.setText(currentDate);
+
+        TextView selectetArrivalTime = (TextView) findViewById(R.id.pickup_arrival_value);
+        sdf = new SimpleDateFormat("h:mm a");
+        String selectedTime = sdf.format(nextAvailableCalendar.getTimeInMillis());
+        selectetArrivalTime.setText(selectedTime);
 
     }
 
@@ -542,15 +562,34 @@ public class CommuteActivity extends BaseActivity {
 
         Commute currentCommute = getDataManager().getCachedCommute(getApplicationContext());
 
+        Long currentTimeInMilliseconds = System.currentTimeMillis();
 
-        if(currentCommute != null)
+        SimpleDateFormat sdf = new SimpleDateFormat("h:mm a");
+
+        //current commute scheduled in the future or within the same 12 h window (AM/PM)
+        if(
+            currentCommute != null
+            &&
+            (
+                ( currentTimeInMilliseconds < currentCommute.getScheduledPickupArrivalTime()*1000 )
+                ||
+                ( sdf.format(currentTimeInMilliseconds).equals(sdf.format(currentCommute.getScheduledPickupArrivalTime()*1000)))
+            )
+          )
         {
             populateUIWithCommute(currentCommute);
         }
+        else
+        {
+            getDataManager().cacheCommute(null, getApplicationContext());
+            if(!viewIsInEditMode) {
+                //resetForm
+                setNextAvailableDate();
+                enableFormElements();
+                hideFloatingUI();
 
-        //TODO check if commute in the past
-
-        //TODO display cached data in interface if in the future
+            }
+        }
 
     }
 
