@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 
+import com.crashlytics.android.Crashlytics;
 import java.util.List;
 
 
@@ -26,6 +27,7 @@ public class LoginActivity extends BaseActivity{
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        Crashlytics.start(this);
 
         if(getDataManager().retrieveUserEmail(getApplicationContext()) != null){
 

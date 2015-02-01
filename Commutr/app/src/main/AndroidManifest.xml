@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="android.commutr.com.commutr" >
+    package="android.commutr.com.commutr"
+    android:versionCode="1"
+    android:versionName="0.1">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -35,6 +37,7 @@
             android:name=".CommuteActivity"
             android:label="@string/title_activity_commute" >
         </activity>
+        <meta-data android:name="com.crashlytics.ApiKey" android:value="f8162238dc0de3bfea52e05090ad6639bc94d6c0"/>
     </application>
 
 </manifest>

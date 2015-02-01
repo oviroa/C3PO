@@ -431,23 +431,23 @@ public class CommuteActivity extends BaseActivity {
         //weekend
         if(day == Calendar.SATURDAY){
             nextAvailableCalendar.add(Calendar.DATE, 2);
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,7);
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
             nextAvailableCalendar.set(Calendar.MINUTE,0);
 
         } else if(day == Calendar.SUNDAY) {
             nextAvailableCalendar.add(Calendar.DATE, 1);
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,7);
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
             nextAvailableCalendar.set(Calendar.MINUTE,0);
         }
         else if(hour >= getResources().getInteger(R.integer.latest_commute_set_time)){
             if(day == Calendar.FRIDAY){
                 nextAvailableCalendar.add(Calendar.DATE, 3);
-                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,7);
+                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
                 nextAvailableCalendar.set(Calendar.MINUTE,0);
             }
             else{
                 nextAvailableCalendar.add(Calendar.DATE, 1);
-                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,7);
+                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
                 nextAvailableCalendar.set(Calendar.MINUTE,0);
             }
 
