@@ -189,7 +189,7 @@ public class CommuteActivity extends BaseActivity {
         swipeView.setRefreshing(true);
 
         //block screen orientation change
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
         getDataManager().storeCommute
                 (
@@ -246,7 +246,7 @@ public class CommuteActivity extends BaseActivity {
         swipeView.setRefreshing(true);
 
         //block screen orientation change
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
         getDataManager().storeCommute
                 (
@@ -560,19 +560,32 @@ public class CommuteActivity extends BaseActivity {
             // Create a new instance of DatePickerDialog and return it
             DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), this, year, month, day);
             datePickerDialog.getDatePicker().setMinDate(nextAvailableCalendar.getTimeInMillis());
+
             return datePickerDialog;
         }
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
-            TextView selectedCommuteDate = (TextView) getActivity().findViewById(R.id.select_commute_date_value);
-            TextView commuteDateValue = (TextView) getActivity().findViewById(R.id.commute_date_value);
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM dd ");
-            selectedPickupDateTime.set(Calendar.YEAR,year);
-            selectedPickupDateTime.set(Calendar.MONTH,month);
-            selectedPickupDateTime.set(Calendar.DAY_OF_MONTH,day);
-            String selectedDate = sdf.format(selectedPickupDateTime.getTimeInMillis());
-            selectedCommuteDate.setText(selectedDate);
-            commuteDateValue.setText(selectedDate);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.YEAR, year);
+            calendar.set(Calendar.MONTH, month);
+            calendar.set(Calendar.DAY_OF_MONTH, day);
+
+            if(calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
+                    || calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
+                DisplayMessenger.showBasicToast(getActivity().getApplicationContext(),
+                        getActivity().getResources().getString(R.string.day_out_of_bounds));
+            } else {
+                TextView selectedCommuteDate = (TextView) getActivity().findViewById(R.id.select_commute_date_value);
+                TextView commuteDateValue = (TextView) getActivity().findViewById(R.id.commute_date_value);
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM dd ");
+                selectedPickupDateTime.set(Calendar.YEAR, year);
+                selectedPickupDateTime.set(Calendar.MONTH, month);
+                selectedPickupDateTime.set(Calendar.DAY_OF_MONTH, day);
+                String selectedDate = sdf.format(selectedPickupDateTime.getTimeInMillis());
+                selectedCommuteDate.setText(selectedDate);
+                commuteDateValue.setText(selectedDate);
+            }
         }
     }
 
@@ -594,6 +607,20 @@ public class CommuteActivity extends BaseActivity {
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             TextView selectetArrivalTime = (TextView) getActivity().findViewById(R.id.pickup_arrival_value);
             SimpleDateFormat sdf = new SimpleDateFormat("h:mm a");
+
+            if(
+                    hourOfDay < getActivity().getResources().getInteger(R.integer.earliest_commute_set_time)
+                    || hourOfDay >= getActivity().getResources().getInteger(R.integer.latest_commute_set_time)
+              )
+            {
+                DisplayMessenger.showBasicToast(getActivity().getApplicationContext(),
+                       getActivity().getResources().getString(R.string.time_out_of_bounds));
+
+                hourOfDay = getActivity().getResources().getInteger(R.integer.earliest_commute_set_time);
+                minute = 0;
+
+            }
+
             selectedPickupDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
             selectedPickupDateTime.set(Calendar.MINUTE, minute);
             String selectedTime = sdf.format(selectedPickupDateTime.getTimeInMillis());

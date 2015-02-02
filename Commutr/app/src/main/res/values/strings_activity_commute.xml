@@ -8,6 +8,8 @@
     <string name="drop_off_location">Drop off location:</string>
     <string name="type_of_commuter">Type of commuter</string>
     <string name="getting_to_the_pickup">Getting to the pickup</string>
+    <string name="time_out_of_bounds">Pickup location is not open at the time you selected</string>
+    <string name="day_out_of_bounds">Pickup location is not open on the day you selected</string>
 
     <string name="driver">Driver (unlock)</string>
     <string name="rider">Rider</string>
