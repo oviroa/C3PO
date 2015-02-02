@@ -169,7 +169,7 @@ public class LoginActivity extends BaseActivity{
 
         try {
             PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            String version = "A-" + pInfo.versionName;
+            String version = pInfo.versionName;
 
             myInstallation.setVersion(version);
         } catch (PackageManager.NameNotFoundException e) {
