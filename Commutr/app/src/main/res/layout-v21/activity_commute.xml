@@ -254,22 +254,5 @@
         android:stateListAnimator="@anim/button_elevation"
         tools:ignore="RtlCompat" />
 
-    <ImageButton
-        android:visibility="gone"
-        android:id="@+id/cancel_commute"
-        android:layout_marginTop="@dimen/bottom_double_offset"
-        android:layout_marginRight="@dimen/right_offset"
-        android:layout_width="@dimen/round_button_diameter"
-        android:layout_height="@dimen/round_button_diameter"
-        android:layout_gravity="end|bottom"
-        android:layout_marginBottom="@dimen/add_button_margin"
-        android:layout_marginEnd="@dimen/add_button_margin"
-        android:tint="@android:color/white"
-        android:background="@drawable/oval_ripple_red"
-        android:src="@android:drawable/ic_delete"
-        android:elevation="@dimen/elevation_low"
-        android:stateListAnimator="@anim/button_elevation"
-        tools:ignore="RtlCompat" />
-
 
 </LinearLayout>

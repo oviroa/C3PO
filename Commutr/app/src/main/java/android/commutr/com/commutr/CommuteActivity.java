@@ -89,13 +89,6 @@ public class CommuteActivity extends BaseActivity {
             }
         });
 
-        ImageButton cancelCommuteButton = (ImageButton) findViewById(R.id.cancel_commute);
-        cancelCommuteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                cancelCommute();
-            }
-        });
     }
 
     private void handleProgressBar() {
@@ -119,6 +112,9 @@ public class CommuteActivity extends BaseActivity {
         if(currentCommute != null) {
 
             if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
+
+                //disable confirmation button
+                disableConfirmationButton();
 
                 registerCancelledCommute(currentCommute);
 
@@ -145,6 +141,9 @@ public class CommuteActivity extends BaseActivity {
             //disable form
             disableFormElements();
 
+            //disable confirmation button
+            disableConfirmationButton();
+
             //save commute
             saveCommute(buildCommute());
 
@@ -166,9 +165,7 @@ public class CommuteActivity extends BaseActivity {
         editCommuteButton.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in));
         editCommuteButton.setVisibility(View.VISIBLE);
 
-        ImageButton cancelCommuteButton = (ImageButton) findViewById(R.id.cancel_commute);
-        cancelCommuteButton.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in));
-        cancelCommuteButton.setVisibility(View.VISIBLE);
+        showCancelButton();
     }
 
 
@@ -179,9 +176,7 @@ public class CommuteActivity extends BaseActivity {
         editCommuteButton.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out));
         editCommuteButton.setVisibility(View.GONE);
 
-        ImageButton cancelCommuteButton = (ImageButton) findViewById(R.id.cancel_commute);
-        cancelCommuteButton.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out));
-        cancelCommuteButton.setVisibility(View.GONE);
+        showConfirmButton();
     }
 
 
@@ -404,11 +399,50 @@ public class CommuteActivity extends BaseActivity {
         Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
         gettingToPickupSpinner.setEnabled(false);
 
-        //confirm button
+    }
+
+    private void disableConfirmationButton()
+    {
         Button confirmCommuteButton = (Button) findViewById(R.id.confirm_commute_button);
         confirmCommuteButton.setEnabled(false);
         confirmCommuteButton.setAlpha(0.6f);
     }
+
+    private void enableConfirmationButton()
+    {
+        Button confirmCommuteButton = (Button) findViewById(R.id.confirm_commute_button);
+        confirmCommuteButton.setEnabled(true);
+        confirmCommuteButton.setAlpha(1f);
+    }
+
+    private void showConfirmButton() {
+        //confirm button
+        Button confirmCommuteButton = (Button) findViewById(R.id.confirm_commute_button);
+        confirmCommuteButton.setEnabled(true);
+        confirmCommuteButton.setAlpha(1f);
+        confirmCommuteButton.setText(getResources().getString(R.string.confirm_my_commute));
+        confirmCommuteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                confirmCommute();
+            }
+        });
+    }
+
+    private void showCancelButton() {
+        //confirm button
+        Button confirmCommuteButton = (Button) findViewById(R.id.confirm_commute_button);
+        confirmCommuteButton.setEnabled(true);
+        confirmCommuteButton.setAlpha(1f);
+        confirmCommuteButton.setText(getResources().getString(R.string.cancel_my_commute));
+        confirmCommuteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                cancelCommute();
+            }
+        });
+    }
+
 
     private void enableFormElements()
     {
@@ -431,10 +465,8 @@ public class CommuteActivity extends BaseActivity {
         Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
         gettingToPickupSpinner.setEnabled(true);
 
-        //confirm button
-        Button confirmCommuteButton = (Button) findViewById(R.id.confirm_commute_button);
-        confirmCommuteButton.setEnabled(true);
-        confirmCommuteButton.setAlpha(1f);
+        //toggle confirm button
+        showConfirmButton();
     }
 
     private void setNextAvailableDate(){
@@ -484,8 +516,7 @@ public class CommuteActivity extends BaseActivity {
 
     }
 
-    private void setSpinners()
-    {
+    private void setSpinners() {
         Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
         R.array.type_of_commuter_options, R.layout.spinner_item);
@@ -498,8 +529,7 @@ public class CommuteActivity extends BaseActivity {
 
     }
 
-    private void setSingleSpinner(Spinner spinner, ArrayAdapter <CharSequence> adapter)
-    {
+    private void setSingleSpinner(Spinner spinner, ArrayAdapter <CharSequence> adapter) {
         adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         spinner.setAdapter(adapter);
     }
@@ -611,8 +641,7 @@ public class CommuteActivity extends BaseActivity {
 
     }
 
-    private void populateUIWithCommute(Commute commute)
-    {
+    private void populateUIWithCommute(Commute commute) {
         long cachedArrivalTime = commute.getScheduledPickupArrivalTime()*1000;
 
         //set commute date date in top/bottom window

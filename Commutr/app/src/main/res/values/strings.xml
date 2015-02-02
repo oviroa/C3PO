@@ -16,6 +16,7 @@
     <string name="commute_error_message">Traffic jam! Your commute registration failed. Try again later.</string>
     <string name="title_activity_commute">YOUR COMMUTE</string>
     <string name="confirm_my_commute">Confirm my commute</string>
+    <string name="cancel_my_commute">Cancel my commute</string>
 
 
 
