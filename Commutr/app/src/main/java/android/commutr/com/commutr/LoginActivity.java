@@ -1,8 +1,13 @@
 package android.commutr.com.commutr;
 
 import android.commutr.com.commutr.base.BaseActivity;
+import android.commutr.com.commutr.model.Identity;
 import android.commutr.com.commutr.utils.ClientUtility;
+import android.commutr.com.commutr.utils.Installation;
+import android.commutr.com.commutr.utils.Logger;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -11,7 +16,14 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
 import com.crashlytics.android.Crashlytics;
+
+import org.json.JSONObject;
+
 import java.util.List;
 
 
@@ -19,6 +31,11 @@ import java.util.List;
  * A login screen that offers login via email
  */
 public class LoginActivity extends BaseActivity{
+
+    //request queue for server calls
+    private RequestQueue commuteVolley;
+    //tag for Volley
+    private final Object TAG = new Object();
 
     // UI references.
     private AutoCompleteTextView emailView;
@@ -87,15 +104,52 @@ public class LoginActivity extends BaseActivity{
         } else {
 
             getDataManager().storeUserEmail(emailView.getText().toString(), getApplicationContext());
+
+            //store installation identity if network on
+            if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
+                registerIdentity(buildIdentity());
+            }
+
             // perform the user login attempt.
             logIn();
         }
     }
 
-    private void logIn()
-    {
+    private void logIn() {
+
         Intent intent = new Intent(this, CommuteActivity.class);
         startActivity(intent);
+    }
+
+
+    private void registerIdentity(Identity identity) {
+
+        if(commuteVolley == null) {
+            commuteVolley = Volley.newRequestQueue(getApplicationContext());
+        }
+        getDataManager().storeIndentity
+                (
+                        identity,
+                        getApplicationContext(),
+                        commuteVolley,
+                        TAG,
+                        new Response.Listener<JSONObject>() {
+
+                            public void onResponse(JSONObject result) {
+
+                                Logger.warn("RESPONSE IDENTITY", " OK :: " + result.toString());
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            public void onErrorResponse(VolleyError error) {
+
+                                Logger.warn("RESPONSE IDENTITY", " ERROR :: " + error.getMessage());
+
+                            }
+                        }
+                );
+
     }
 
     private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
@@ -107,6 +161,24 @@ public class LoginActivity extends BaseActivity{
         emailView.setAdapter(adapter);
     }
 
+    private Identity buildIdentity(){
+
+        Identity myInstallation = new Identity();
+        myInstallation.setEmail((getDataManager().retrieveUserEmail(getApplicationContext())));
+        myInstallation.setIdentifier(Installation.id(getApplicationContext()));
+
+        try {
+            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            String version = pInfo.versionName;
+
+            myInstallation.setVersion(version);
+        } catch (PackageManager.NameNotFoundException e) {
+            myInstallation.setVersion("n/a");
+        }
+
+        return myInstallation;
+
+    }
 }
 
 

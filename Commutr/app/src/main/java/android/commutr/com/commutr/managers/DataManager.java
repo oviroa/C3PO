@@ -3,10 +3,10 @@ package android.commutr.com.commutr.managers;
 import android.commutr.com.commutr.CommutrApp;
 import android.commutr.com.commutr.R;
 import android.commutr.com.commutr.model.Commute;
+import android.commutr.com.commutr.model.Identity;
 import android.commutr.com.commutr.utils.Logger;
 import android.content.Context;
 import android.content.SharedPreferences;
-
 import com.android.volley.Request.Method;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
@@ -28,15 +28,14 @@ public class DataManager {
     private static DataManager ref = null;
 
     private static String COMMUTE_URL = "https://just-armor-726.appspot.com/api/commute";
+    private static String IDENTITY_URL = "https://just-armor-726.appspot.com/api/device";
 
     /**
      * Retrieves singleton instance
      * @return
      */
-    public static synchronized DataManager getInstance()
-    {
-        if (ref == null)
-        {	// it's ok, we can call this constructor
+    public static synchronized DataManager getInstance() {
+        if (ref == null) {	// it's ok, we can call this constructor
             ref = new DataManager();
         }
         return ref;
@@ -45,8 +44,7 @@ public class DataManager {
     /**
      * Do not allow constructor to function
      */
-    private DataManager()
-    {
+    private DataManager(){
 
     }
 
@@ -116,8 +114,7 @@ public class DataManager {
         //Volley submission method
         int method = (Method.PUT);
 
-        try
-        {
+        try {
             Logger.warn("SENDING",(new JSONObject(gson.toJson(commute,Commute.class))).toString());
 
             //prep request
@@ -137,9 +134,7 @@ public class DataManager {
             //add request to Volley que for execution
             queue.add(jsonRequest);
 
-        }
-        catch (JSONException e)
-        {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
@@ -168,14 +163,12 @@ public class DataManager {
 
     }
 
-    public Commute getCachedCommute(Context context)
-    {
+    public Commute getCachedCommute(Context context) {
         //store in mem first
         Commute commute = ((CommutrApp)context).getCurrentCommute();
 
 
-        if(commute == null)
-        {
+        if(commute == null) {
             SharedPreferences settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
             String tripJson = settings.getString(context.getResources().getString(R.string.commutr_current_commute), null);
 
@@ -186,5 +179,46 @@ public class DataManager {
         }
 
         return commute;
+    }
+
+    public void storeIndentity(Identity identity,
+                             Context context,
+                             RequestQueue queue,
+                             Object tag,
+                             Listener<JSONObject> listener,
+                             ErrorListener errorListener) {
+
+
+        //prepare JSON builder obj
+        GsonBuilder gsonb = new GsonBuilder();
+        Gson gson = gsonb.create();
+        //Volley submission method
+        int method = (Method.PUT);
+
+        try {
+
+            Logger.warn("SENDING",(new JSONObject(gson.toJson(identity,Identity.class))).toString());
+
+            //prep request
+            JsonObjectRequest jsonRequest =
+                    new JsonObjectRequest
+                            (
+                                    method,
+                                    IDENTITY_URL,
+                                    new JSONObject(gson.toJson(identity,Identity.class)),
+                                    listener,
+                                    errorListener
+                            );
+
+            jsonRequest.setShouldCache(false);
+            jsonRequest.setTag(tag);
+
+            //add request to Volley que for execution
+            queue.add(jsonRequest);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 }

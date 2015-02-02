@@ -71,8 +71,7 @@ public class CommuteActivity extends BaseActivity {
         selectedPickupDateTime = nextAvailableCalendar;
     }
 
-    private void handleButtonEvents()
-    {
+    private void handleButtonEvents() {
         Button confirmCommuteButton = (Button) findViewById(R.id.confirm_commute_button);
         confirmCommuteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,8 +101,7 @@ public class CommuteActivity extends BaseActivity {
     }
 
 
-    private void cancelCommute()
-    {
+    private void cancelCommute() {
         Commute currentCommute = getDataManager().getCachedCommute(getApplicationContext());
 
         currentCommute.setConfirmTime(0L);
@@ -128,14 +126,12 @@ public class CommuteActivity extends BaseActivity {
 
     }
 
-    private void editCommute()
-    {
+    private void editCommute() {
         hideFloatingUI();
         enableFormElements();
     }
 
-    private void confirmCommute()
-    {
+    private void confirmCommute() {
         if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
 
             //disable form
