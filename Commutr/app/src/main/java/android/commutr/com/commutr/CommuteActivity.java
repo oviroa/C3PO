@@ -199,6 +199,8 @@ public class CommuteActivity extends BaseActivity {
 
                                 Logger.warn("RESPONSE"," OK :: "+result.toString());
 
+                                //if(result.get("error") != null)
+
                                 setRequestedOrientation(screenOrientation);
 
                                 getDataManager().cacheCommute(commute,getApplicationContext());

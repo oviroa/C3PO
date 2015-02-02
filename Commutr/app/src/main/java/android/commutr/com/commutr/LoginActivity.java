@@ -170,8 +170,7 @@ public class LoginActivity extends BaseActivity{
         try {
             PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
             String version = pInfo.versionName;
-
-            myInstallation.setVersion(version);
+            myInstallation.setVersion(new StringBuffer().append("A-").append(version).toString());
         } catch (PackageManager.NameNotFoundException e) {
             myInstallation.setVersion("n/a");
         }
