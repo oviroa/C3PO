@@ -17,6 +17,8 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -39,7 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 
-public class CommuteActivity extends BaseActivity {
+public class CommuteActivity extends BaseActivity implements OnItemSelectedListener{
 
     private SwipeRefreshLayout swipeView;
 
@@ -73,6 +75,38 @@ public class CommuteActivity extends BaseActivity {
         handleButtonEvents();
 
         selectedPickupDateTime = nextAvailableCalendar;
+    }
+
+    public void onItemSelected(AdapterView<?> parent, View view,
+                               int pos, long id) {
+
+
+        Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
+        Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
+
+
+        switch(parent.getId()) {
+            case R.id.commuter_type_spinner:
+
+                if(commuterTypeSpinner.getSelectedItem().equals(getResources().getString(R.string.driver))) {
+                    gettingToPickupSpinner.setSelection(2,true);
+                }
+
+                break;
+            case R.id.getting_to_pickup_spinner:
+
+                if(gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.bike))
+                        || gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.walking))) {
+                    commuterTypeSpinner.setSelection(1,true);
+                }
+
+                break;
+        }
+
+    }
+
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Another interface callback
     }
 
     private void loadMixpanelSuperData() {
@@ -547,16 +581,19 @@ public class CommuteActivity extends BaseActivity {
     }
 
     private void setSpinners() {
+
         Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
         R.array.type_of_commuter_options, R.layout.spinner_item);
         setSingleSpinner(commuterTypeSpinner,adapter);
+        commuterTypeSpinner.setOnItemSelectedListener(this);
+
 
         Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
         adapter = ArrayAdapter.createFromResource(this,
                 R.array.getting_to_pickup_options, R.layout.spinner_item);
         setSingleSpinner(gettingToPickupSpinner,adapter);
-
+        gettingToPickupSpinner.setOnItemSelectedListener(this);
     }
 
     private void setSingleSpinner(Spinner spinner, ArrayAdapter <CharSequence> adapter) {
