@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="application_started">androidApplicationStarted</string>
+    <string name="application_stopped">androidApplicationStopped</string>
+    <string name="user_email">$email</string>
+    <string name="commute_submitted">androidCommuteSubmitted</string>
+    <string name="commute_cancelled">androidCommuteCancelled</string>
+    <string name="commute_edited">androidCommuteEdited</string>
+
+</resources>

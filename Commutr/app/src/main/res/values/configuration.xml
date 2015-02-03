@@ -24,5 +24,7 @@
     <integer name="driver">3</integer>
     <integer name="rider">4</integer>
 
+    <string name="mixpanel_token">20e050ab3318976604d224ee9c47dc1f</string>
+
 
 </resources>

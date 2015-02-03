@@ -43,4 +43,5 @@ dependencies {
     compile 'com.android.support:support-v4:21.0.3'
     compile 'com.google.code.gson:gson:2.3'
     compile 'com.crashlytics.android:crashlytics:1.+'
+    compile "com.mixpanel.android:mixpanel-android:4.5.3"
 }

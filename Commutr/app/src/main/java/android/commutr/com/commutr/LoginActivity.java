@@ -21,6 +21,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
 import com.crashlytics.android.Crashlytics;
+import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
 import org.json.JSONObject;
 
@@ -105,6 +106,14 @@ public class LoginActivity extends BaseActivity{
 
             getDataManager().storeUserEmail(emailView.getText().toString(), getApplicationContext());
 
+
+            MixpanelAPI mixpanel =
+                    MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+
+            mixpanel.getPeople().identify(mixpanel.getDistinctId());
+            mixpanel.getPeople()
+                        .set(getResources().getString(R.string.user_email),emailView.getText().toString());
+
             //store installation identity if network on
             if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
                 registerIdentity(buildIdentity());
@@ -170,7 +179,7 @@ public class LoginActivity extends BaseActivity{
         try {
             PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
             String version = pInfo.versionName;
-            myInstallation.setVersion(new StringBuffer().append("A-").append(version).toString());
+            myInstallation.setVersion(new StringBuilder().append("A-").append(version).toString());
         } catch (PackageManager.NameNotFoundException e) {
             myInstallation.setVersion("n/a");
         }

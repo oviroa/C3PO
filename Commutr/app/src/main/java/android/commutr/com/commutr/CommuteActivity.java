@@ -30,6 +30,8 @@ import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
+import com.crashlytics.android.Crashlytics;
+import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
 import org.json.JSONObject;
 
@@ -60,6 +62,8 @@ public class CommuteActivity extends BaseActivity {
 
         setContentView(R.layout.activity_commute);
 
+        loadMixpanelSuperData();
+
         handleProgressBar();
 
         setSpinners();
@@ -70,6 +74,19 @@ public class CommuteActivity extends BaseActivity {
 
         selectedPickupDateTime = nextAvailableCalendar;
     }
+
+    private void loadMixpanelSuperData() {
+
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
+        mixpanel.getPeople().set(getResources().getString(R.string.user_email),
+                getDataManager().retrieveUserEmail(getApplicationContext()));
+
+        Crashlytics.setUserIdentifier(mixpanel.getDistinctId());
+    }
+
 
     private void handleButtonEvents() {
         Button confirmCommuteButton = (Button) findViewById(R.id.confirm_commute_button);
@@ -116,6 +133,11 @@ public class CommuteActivity extends BaseActivity {
 
                 registerCancelledCommute(currentCommute);
 
+                MixpanelAPI mixpanel =
+                        MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+                mixpanel.getPeople().identify(mixpanel.getDistinctId());
+                mixpanel.track(getResources().getString(R.string.commute_cancelled), null);
+
             } else {
                 DisplayMessenger.showBasicToast
                         (getApplicationContext(),
@@ -129,6 +151,11 @@ public class CommuteActivity extends BaseActivity {
     private void editCommute() {
         hideFloatingUI();
         enableFormElements();
+
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
+        mixpanel.track(getResources().getString(R.string.commute_edited), null);
     }
 
     private void confirmCommute() {
@@ -142,6 +169,11 @@ public class CommuteActivity extends BaseActivity {
 
             //save commute
             saveCommute(buildCommute());
+
+            MixpanelAPI mixpanel =
+                    MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+            mixpanel.getPeople().identify(mixpanel.getDistinctId());
+            mixpanel.track(getResources().getString(R.string.commute_submitted), null);
 
         } else {
             DisplayMessenger.showBasicToast
@@ -698,4 +730,33 @@ public class CommuteActivity extends BaseActivity {
         }
 
     }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
+        mixpanel.track(getResources().getString(R.string.application_started), null);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
+        mixpanel.track(getResources().getString(R.string.application_stopped), null);
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.flush();
+
+    }
+
 }

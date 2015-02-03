@@ -2,7 +2,8 @@ package android.commutr.com.commutr;
 
 import android.app.Application;
 import android.commutr.com.commutr.model.Commute;
-import android.commutr.com.commutr.utils.Logger;
+
+import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
 /**
  * Created by oviroa on 1/23/15.
@@ -15,7 +16,11 @@ public class CommutrApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Logger.warn("Application","started");
+
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
+        mixpanel.track(getResources().getString(R.string.application_started), null);
     }
 
     private String userEmail;
@@ -39,4 +44,5 @@ public class CommutrApp extends Application {
 
         return currentCommute;
     }
+
 }
