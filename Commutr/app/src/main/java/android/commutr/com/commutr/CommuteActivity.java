@@ -74,6 +74,10 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         handleButtonEvents();
 
         selectedPickupDateTime = nextAvailableCalendar;
+
+//        final Intent recoIntent = new Intent(getApplicationContext(),LocationSubmissionService.class);
+//        //start reco service
+//        startService(recoIntent);
     }
 
     public void onItemSelected(AdapterView<?> parent, View view,
