@@ -13,7 +13,7 @@ public class Logger {
 
     public static void warn(String header, String body){
 
-        Log.w(logPrefix + header, body);
+        Log.w(new StringBuilder().append(logPrefix).append(header).toString(), body);
     }
 
 

@@ -4,9 +4,9 @@ import android.commutr.com.commutr.CommutrApp;
 import android.commutr.com.commutr.R;
 import android.commutr.com.commutr.model.Commute;
 import android.commutr.com.commutr.model.Identity;
-import android.commutr.com.commutr.utils.Logger;
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import com.android.volley.Request.Method;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
@@ -115,7 +115,6 @@ public class DataManager {
         int method = (Method.PUT);
 
         try {
-            Logger.warn("SENDING",(new JSONObject(gson.toJson(commute,Commute.class))).toString());
 
             //prep request
             JsonObjectRequest jsonRequest =
@@ -196,8 +195,6 @@ public class DataManager {
         int method = (Method.PUT);
 
         try {
-
-            Logger.warn("SENDING",(new JSONObject(gson.toJson(identity,Identity.class))).toString());
 
             //prep request
             JsonObjectRequest jsonRequest =

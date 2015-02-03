@@ -8,7 +8,6 @@ import android.commutr.com.commutr.model.Commute;
 import android.commutr.com.commutr.utils.ClientUtility;
 import android.commutr.com.commutr.utils.DisplayMessenger;
 import android.commutr.com.commutr.utils.Installation;
-import android.commutr.com.commutr.utils.Logger;
 import android.content.pm.ActivityInfo;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -89,7 +88,9 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
             case R.id.commuter_type_spinner:
 
                 if(commuterTypeSpinner.getSelectedItem().equals(getResources().getString(R.string.driver))) {
-                    gettingToPickupSpinner.setSelection(2,true);
+                    gettingToPickupSpinner.setSelection
+                            (((ArrayAdapter<String>)gettingToPickupSpinner.getAdapter()).getPosition(getResources().getString(R.string.car)),
+                                    true);
                 }
 
                 break;
@@ -97,7 +98,8 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
 
                 if(gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.bike))
                         || gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.walking))) {
-                    commuterTypeSpinner.setSelection(1,true);
+                    commuterTypeSpinner.setSelection(((ArrayAdapter<String>)commuterTypeSpinner.getAdapter()).getPosition(getResources().getString(R.string.rider)),
+                            true);
                 }
 
                 break;
@@ -263,33 +265,33 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
 
                             public void onResponse(JSONObject result) {
 
-                                Logger.warn("RESPONSE"," OK :: "+result.toString());
-
-                                //if(result.get("error") != null)
-
                                 setRequestedOrientation(screenOrientation);
-
-                                getDataManager().cacheCommute(commute,getApplicationContext());
                                 swipeView.setRefreshing(false);
-                                DisplayMessenger.showBasicToast
-                                        (getApplicationContext(),
-                                                getResources().getString(R.string.commute_cancelled_message));
-                                hideFloatingUI();
-                                enableFormElements();
 
-                                getDataManager().cacheCommute(null, getApplicationContext());
+                                if(result.has("error")) {
+
+                                    DisplayMessenger.showBasicToast
+                                            (getApplicationContext(),
+                                                    getResources().getString(R.string.commute_error_message));
+
+                                } else {
+
+                                    DisplayMessenger.showBasicToast
+                                            (getApplicationContext(),
+                                                    getResources().getString(R.string.commute_cancelled_message));
+                                    hideFloatingUI();
+                                    enableFormElements();
+                                    getDataManager().cacheCommute(null, getApplicationContext());
+
+                                }
 
                             }
                         },
                         new ErrorListener() {
                             public void onErrorResponse(VolleyError error) {
 
-                                Logger.warn("RESPONSE"," ERROR :: "+ error.getMessage());
-
                                 setRequestedOrientation(screenOrientation);
-
                                 swipeView.setRefreshing(false);
-
                                 DisplayMessenger.showBasicToast
                                         (getApplicationContext(),
                                                 getResources().getString(R.string.commute_error_message));
@@ -323,12 +325,23 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                             public void onResponse(JSONObject result) {
 
                                 setRequestedOrientation(screenOrientation);
-                                getDataManager().cacheCommute(commute,getApplicationContext());
                                 swipeView.setRefreshing(false);
-                                DisplayMessenger.showBasicToast
-                                        (getApplicationContext(),
-                                                getResources().getString(R.string.commute_confirmed_message));
-                                showFloatingUI();
+
+                                if(result.has("error")) {
+
+                                    enableFormElements();
+                                    DisplayMessenger.showBasicToast
+                                            (getApplicationContext(),
+                                                    getResources().getString(R.string.commute_error_message));
+                                } else {
+
+                                    getDataManager().cacheCommute(commute,getApplicationContext());
+                                    DisplayMessenger.showBasicToast
+                                            (getApplicationContext(),
+                                                    getResources().getString(R.string.commute_confirmed_message));
+                                    showFloatingUI();
+
+                                }
 
                             }
                         },
@@ -336,13 +349,10 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                             public void onErrorResponse(VolleyError error) {
 
                                 setRequestedOrientation(screenOrientation);
-
                                 swipeView.setRefreshing(false);
-
                                 DisplayMessenger.showBasicToast
                                         (getApplicationContext(),
                                                 getResources().getString(R.string.commute_error_message));
-
                                 enableFormElements();
                             }
                         }
@@ -556,15 +566,16 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                 nextAvailableCalendar.add(Calendar.DATE, 3);
                 nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
                 nextAvailableCalendar.set(Calendar.MINUTE,0);
-            }//rest of week
-            else{
+            } else {
                 nextAvailableCalendar.add(Calendar.DATE, 1);
                 nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
                 nextAvailableCalendar.set(Calendar.MINUTE,0);
             }
 
+        } else {
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY, getResources().getInteger(R.integer.earliest_commute_set_time));
+            nextAvailableCalendar.set(Calendar.MINUTE, 0);
         }
-
 
         TextView commuteDateValue = (TextView) findViewById(R.id.commute_date_value);
         TextView selectedCommuteDate = (TextView) findViewById(R.id.select_commute_date_value);

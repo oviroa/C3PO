@@ -146,14 +146,16 @@ public class LoginActivity extends BaseActivity{
 
                             public void onResponse(JSONObject result) {
 
-                                Logger.warn("RESPONSE IDENTITY", " OK :: " + result.toString());
+                                if(result.has("error")) {
+                                    Logger.warn("IDENTITY ERROR",result.toString());
+                                }
 
                             }
                         },
                         new Response.ErrorListener() {
                             public void onErrorResponse(VolleyError error) {
 
-                                Logger.warn("RESPONSE IDENTITY", " ERROR :: " + error.getMessage());
+                                error.printStackTrace();
 
                             }
                         }
