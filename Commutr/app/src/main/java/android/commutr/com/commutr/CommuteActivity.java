@@ -286,6 +286,8 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                     hideFloatingUI();
                                     enableFormElements();
                                     getDataManager().cacheCommute(null, getApplicationContext());
+                                    setNextAvailableDate();
+                                    selectedPickupDateTime = nextAvailableCalendar;
 
                                 }
 
@@ -744,6 +746,8 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                 setNextAvailableDate();
                 enableFormElements();
                 hideFloatingUI();
+                setNextAvailableDate();
+                selectedPickupDateTime = nextAvailableCalendar;
 
             }
         }
