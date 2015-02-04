@@ -11,7 +11,7 @@
     <string name="time_out_of_bounds">Pickup location is not open at the time you selected</string>
     <string name="day_out_of_bounds">Pickup location is not open on the day you selected</string>
 
-    <string name="driver">Driver (unlock)</string>
+    <string name="driver">Driver</string>
     <string name="rider">Rider</string>
 
     <string-array name="type_of_commuter_options">

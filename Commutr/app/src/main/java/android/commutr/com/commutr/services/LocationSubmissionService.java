@@ -62,13 +62,17 @@ public class LocationSubmissionService extends IntentService
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
+         Logger.warn("TRALALA","MUHAA 111222 "+intent.getStringExtra("ACTION_TYPE"));
 
-        mGoogleApiClient.connect();
+//        mGoogleApiClient = new GoogleApiClient.Builder(this)
+//                .addApi(LocationServices.API)
+//                .addConnectionCallbacks(this)
+//                .addOnConnectionFailedListener(this)
+//                .build();
+//
+//        mGoogleApiClient.connect();
+//
+//        mGoogleApiClient.
     }
 
 }

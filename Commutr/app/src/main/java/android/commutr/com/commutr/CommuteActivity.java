@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.commutr.com.commutr.base.BaseActivity;
 import android.commutr.com.commutr.model.Commute;
+import android.commutr.com.commutr.utils.Alarms;
 import android.commutr.com.commutr.utils.ClientUtility;
 import android.commutr.com.commutr.utils.DisplayMessenger;
 import android.commutr.com.commutr.utils.Installation;
@@ -78,6 +79,18 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
 //        final Intent recoIntent = new Intent(getApplicationContext(),LocationSubmissionService.class);
 //        //start reco service
 //        startService(recoIntent);
+
+
+
+
+        Commute commute = getDataManager().getCachedCommute(getApplicationContext());
+
+        if(commute != null) {
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(commute.getScheduledPickupArrivalTime() * 1000);
+            Alarms.registerLocationAlarms(getApplicationContext(),calendar);
+        }
     }
 
     public void onItemSelected(AdapterView<?> parent, View view,
@@ -741,13 +754,16 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         else
         {
             getDataManager().cacheCommute(null, getApplicationContext());
+
+            setNextAvailableDate();
+            selectedPickupDateTime = nextAvailableCalendar;
+
             if(!viewIsInEditMode) {
+
                 //resetForm
-                setNextAvailableDate();
                 enableFormElements();
                 hideFloatingUI();
-                setNextAvailableDate();
-                selectedPickupDateTime = nextAvailableCalendar;
+
 
             }
         }

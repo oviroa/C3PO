@@ -27,6 +27,9 @@ public class CommutrApp extends Application {
 
     private Commute currentCommute;
 
+    //alarm events for prediction reminder
+    public static final String LOCATION_START_EVENT = "location_start_event";
+    public static final String LOCATION_END_EVENT = "location_end_event";
 
     public String getUserEmail(){
         return this.userEmail;
