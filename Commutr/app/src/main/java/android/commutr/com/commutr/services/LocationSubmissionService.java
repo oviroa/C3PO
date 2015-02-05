@@ -1,10 +1,12 @@
 package android.commutr.com.commutr.services;
 
-import android.app.IntentService;
+import android.app.Service;
+import android.commutr.com.commutr.CommutrApp;
 import android.commutr.com.commutr.utils.Logger;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -12,34 +14,38 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-
 /**
  * Created by oviroa on 2/3/15.
  */
-public class LocationSubmissionService extends IntentService
+public class LocationSubmissionService extends Service
         implements GoogleApiClient.ConnectionCallbacks,
                     GoogleApiClient.OnConnectionFailedListener,
                     LocationListener{
 
 
-    private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
 
     public LocationSubmissionService()
     {
-        super("LocationSubmissionService");
+        //super("LocationSubmissionService");
     }
 
     @Override
     public void onConnected(Bundle bundle) {
 
         mLocationRequest = LocationRequest.create();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(1000); // Update location every second
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        mLocationRequest.setInterval(25000);
 
         LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);
+                CommutrApp.mGoogleApiClient, mLocationRequest, this);
 
+    }
+
+    @Override
+    public IBinder onBind(Intent arg0) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override
@@ -60,19 +66,44 @@ public class LocationSubmissionService extends IntentService
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
 
-         Logger.warn("TRALALA","MUHAA 111222 "+intent.getStringExtra("ACTION_TYPE"));
+         switch(intent.getStringExtra(CommutrApp.ACTION_TYPE)) {
 
-//        mGoogleApiClient = new GoogleApiClient.Builder(this)
-//                .addApi(LocationServices.API)
-//                .addConnectionCallbacks(this)
-//                .addOnConnectionFailedListener(this)
-//                .build();
-//
-//        mGoogleApiClient.connect();
-//
-//        mGoogleApiClient.
+             case CommutrApp.CONNECT:
+
+                 Logger.warn("LOCO","CONNECT");
+
+                 CommutrApp.mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+                 CommutrApp.mGoogleApiClient.connect();
+
+                 break;
+
+             case CommutrApp.DISCONNECT:
+
+                 Logger.warn("LOCO","DISCONNECT");
+
+                 if(CommutrApp.mGoogleApiClient != null) {
+
+                     Logger.warn("LOCO","IN DISCONNECT");
+                     LocationServices.FusedLocationApi
+                             .removeLocationUpdates(CommutrApp.mGoogleApiClient, this);
+                     CommutrApp.mGoogleApiClient.disconnect();
+                     CommutrApp.mGoogleApiClient = null;
+                 }
+
+                 stopSelf();
+
+                 break;
+         }
+
+        return Service.START_REDELIVER_INTENT;
+
     }
 
 }

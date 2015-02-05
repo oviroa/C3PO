@@ -3,6 +3,7 @@ package android.commutr.com.commutr;
 import android.app.Application;
 import android.commutr.com.commutr.model.Commute;
 
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
 /**
@@ -30,6 +31,10 @@ public class CommutrApp extends Application {
     //alarm events for prediction reminder
     public static final String LOCATION_START_EVENT = "location_start_event";
     public static final String LOCATION_END_EVENT = "location_end_event";
+    public static final String ACTION_TYPE = "action_type";
+    public static final String CONNECT = "connect";
+    public static final String DISCONNECT = "disconnect";
+    public static GoogleApiClient mGoogleApiClient;
 
     public String getUserEmail(){
         return this.userEmail;

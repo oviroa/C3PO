@@ -2,6 +2,7 @@ package android.commutr.com.commutr.utils;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.commutr.com.commutr.CommutrApp;
 import android.commutr.com.commutr.R;
 import android.commutr.com.commutr.services.LocationSubmissionService;
 import android.content.Context;
@@ -18,7 +19,7 @@ public class Alarms {
 
     public static void registerLocationAlarms(Context appContext, Calendar commuteCalendar) {
 
-
+        unRegisterLocationAlarms(appContext);
         registerLocationTrackingStart(appContext, commuteCalendar);
         registerLocationTrackingEnd(appContext, commuteCalendar);
 
@@ -26,6 +27,7 @@ public class Alarms {
 
     public static void unRegisterLocationAlarms(Context appContext) {
 
+        stopLocationTrackingService(appContext);
         unregisterLocationTrackingStart(appContext);
         unregisterLocationTrackingEnd(appContext);
 
@@ -35,6 +37,14 @@ public class Alarms {
     private static void startLocationTrackingService(Context appContext) {
 
         final Intent locationIntent = new Intent(appContext,LocationSubmissionService.class);
+        locationIntent.putExtra(CommutrApp.ACTION_TYPE, CommutrApp.CONNECT);
+        appContext.startService(locationIntent);
+    }
+
+    private static void stopLocationTrackingService(Context appContext) {
+
+        final Intent locationIntent = new Intent(appContext,LocationSubmissionService.class);
+        locationIntent.putExtra(CommutrApp.ACTION_TYPE, CommutrApp.DISCONNECT);
         appContext.startService(locationIntent);
     }
 
@@ -42,10 +52,9 @@ public class Alarms {
     private static void registerStartAlarm(Context appContext, Calendar calendar) {
 
         //alarm intent
-        Intent alarmStartIntent = new Intent(appContext, LocationSubmissionService.class);
-
-        alarmStartIntent.putExtra("ACTION_TYPE","CONNECT");
-
+        Intent alarmStartIntent = new Intent(CommutrApp.CONNECT);
+        alarmStartIntent.setClass(appContext, LocationSubmissionService.class);
+        alarmStartIntent.putExtra(CommutrApp.ACTION_TYPE, CommutrApp.CONNECT);
         ((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).set
                 (
                         AlarmManager.RTC_WAKEUP,
@@ -55,6 +64,26 @@ public class Alarms {
                                         appContext,
                                         0,
                                         alarmStartIntent,
+                                        PendingIntent.FLAG_UPDATE_CURRENT)
+                );
+
+    }
+
+    private static void registerEndAlarm(Context appContext, Calendar calendar) {
+
+        //alarm intent
+        Intent alarmEndIntent = new Intent(CommutrApp.DISCONNECT);
+        alarmEndIntent.setClass(appContext, LocationSubmissionService.class);
+        alarmEndIntent.putExtra(CommutrApp.ACTION_TYPE, CommutrApp.DISCONNECT);
+        ((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).set
+                (
+                        AlarmManager.RTC_WAKEUP,
+                        calendar.getTimeInMillis(),
+                        PendingIntent.getService
+                                (
+                                        appContext,
+                                        0,
+                                        alarmEndIntent,
                                         PendingIntent.FLAG_UPDATE_CURRENT)
                 );
 
@@ -70,8 +99,6 @@ public class Alarms {
         //if today
         if(DateUtils.isToday(commuteCalendar.getTimeInMillis())){
 
-            Logger.warn("today","wha?");
-
             //if current time is past 6 but before 8
             if(calendarStart.get(Calendar.HOUR_OF_DAY) > appContext.getResources().getInteger(R.integer.earliest_location_set_time)){
 
@@ -81,22 +108,28 @@ public class Alarms {
                 //start alarm at 6
                 calendarStart.set(Calendar.HOUR_OF_DAY, appContext.getResources().getInteger(R.integer.earliest_location_set_time));
                 calendarStart.set(Calendar.MINUTE,0);
+
+                Logger.warn("REGISTER","CALENDAR START");
+
+                //calendarStart.set(Calendar.HOUR_OF_DAY,2);
+                //calendarStart.set(Calendar.MINUTE,30);
+
                 registerStartAlarm(appContext, calendarStart);
             }
 
         } else {
 
             //start alarm at 6
-//            calendarStart = commuteCalendar;
-//            calendarStart.set(Calendar.HOUR_OF_DAY, appContext.getResources().getInteger(R.integer.earliest_location_set_time));
-//            calendarStart.set(Calendar.MINUTE,0);
+            calendarStart = commuteCalendar;
+            calendarStart.set(Calendar.HOUR_OF_DAY, appContext.getResources().getInteger(R.integer.earliest_location_set_time));
+            calendarStart.set(Calendar.MINUTE,0);
 
-            calendarStart.set(Calendar.HOUR_OF_DAY,23);
-            calendarStart.set(Calendar.MINUTE,00);
+            Logger.warn("REGISTER","CALENDAR START");
+
+//            calendarStart.set(Calendar.HOUR_OF_DAY,1);
+//            calendarStart.set(Calendar.MINUTE,50);
 
             registerStartAlarm(appContext, calendarStart);
-
-            //unregisterLocationTrackingStart(appContext);
 
         }
 
@@ -105,12 +138,24 @@ public class Alarms {
     private static void registerLocationTrackingEnd(Context appContext, Calendar commuteCalendar) {
 
 
+        commuteCalendar.set(Calendar.HOUR_OF_DAY,appContext.getResources().getInteger(R.integer.latest_location_set_time));
+        commuteCalendar.set(Calendar.MINUTE,0);
+
+//        Calendar calendarEnd = Calendar.getInstance();
+//        calendarEnd.set(Calendar.HOUR_OF_DAY,2);
+//        calendarEnd.set(Calendar.MINUTE,12);
+
+
+        registerEndAlarm(appContext, commuteCalendar);
+
     }
 
     private static void unregisterLocationTrackingStart(Context appContext) {
 
         //alarm intent
-        Intent alarmStartIntent = new Intent(appContext, LocationSubmissionService.class);
+        Intent alarmStartIntent = new Intent(CommutrApp.CONNECT);
+        alarmStartIntent.setClass(appContext, LocationSubmissionService.class);
+
 
         ((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).cancel
                 (
@@ -126,6 +171,22 @@ public class Alarms {
     }
 
     private static void unregisterLocationTrackingEnd(Context appContext) {
+
+        //alarm intent
+        Intent alarmEndIntent = new Intent(CommutrApp.DISCONNECT);
+        alarmEndIntent.setClass(appContext, LocationSubmissionService.class);
+
+
+        ((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).cancel
+                (
+                        PendingIntent.getService
+                                (
+                                        appContext,
+                                        0,
+                                        alarmEndIntent,
+                                        PendingIntent.FLAG_UPDATE_CURRENT
+                                )
+                );
 
     }
 

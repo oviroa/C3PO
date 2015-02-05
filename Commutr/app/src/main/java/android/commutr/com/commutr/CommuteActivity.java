@@ -76,12 +76,10 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
 
         selectedPickupDateTime = nextAvailableCalendar;
 
-//        final Intent recoIntent = new Intent(getApplicationContext(),LocationSubmissionService.class);
-//        //start reco service
-//        startService(recoIntent);
+    }
 
 
-
+    public void registerLocationAlarms() {
 
         Commute commute = getDataManager().getCachedCommute(getApplicationContext());
 
@@ -89,9 +87,11 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
 
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(commute.getScheduledPickupArrivalTime() * 1000);
-            Alarms.registerLocationAlarms(getApplicationContext(),calendar);
+            Alarms.registerLocationAlarms(getApplicationContext(), calendar);
         }
+
     }
+
 
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {
@@ -301,6 +301,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                     getDataManager().cacheCommute(null, getApplicationContext());
                                     setNextAvailableDate();
                                     selectedPickupDateTime = nextAvailableCalendar;
+                                    Alarms.unRegisterLocationAlarms(getApplicationContext());
 
                                 }
 
@@ -359,6 +360,8 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                             (getApplicationContext(),
                                                     getResources().getString(R.string.commute_confirmed_message));
                                     showFloatingUI();
+
+                                    registerLocationAlarms();
 
                                 }
 

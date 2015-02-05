@@ -4,6 +4,7 @@ import android.commutr.com.commutr.CommutrApp;
 import android.commutr.com.commutr.R;
 import android.commutr.com.commutr.model.Commute;
 import android.commutr.com.commutr.model.Identity;
+import android.commutr.com.commutr.model.LocationPoint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -29,6 +30,8 @@ public class DataManager {
 
     private static String COMMUTE_URL = "https://just-armor-726.appspot.com/api/commute";
     private static String IDENTITY_URL = "https://just-armor-726.appspot.com/api/device";
+    private static String LOCATION_URL = "https://just-armor-726.appspot.com/api/";
+
 
     /**
      * Retrieves singleton instance
@@ -218,4 +221,14 @@ public class DataManager {
         }
 
     }
+
+    public void sendLocationPoint(LocationPoint identity,
+                                  Context context,
+                                  RequestQueue queue,
+                                  Object tag,
+                                  Listener<JSONObject> listener,
+                                  ErrorListener errorListener) {
+
+    }
+
 }
