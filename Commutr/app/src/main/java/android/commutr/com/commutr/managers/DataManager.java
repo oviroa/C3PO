@@ -30,7 +30,7 @@ public class DataManager {
 
     private static String COMMUTE_URL = "https://just-armor-726.appspot.com/api/commute";
     private static String IDENTITY_URL = "https://just-armor-726.appspot.com/api/device";
-    private static String LOCATION_URL = "https://just-armor-726.appspot.com/api/";
+    private static String LOCATION_URL = "https://just-armor-726.appspot.com/api/point";
 
 
     /**
@@ -222,12 +222,41 @@ public class DataManager {
 
     }
 
-    public void sendLocationPoint(LocationPoint identity,
+    public void sendLocationPoint(LocationPoint point,
                                   Context context,
                                   RequestQueue queue,
                                   Object tag,
                                   Listener<JSONObject> listener,
                                   ErrorListener errorListener) {
+
+        //prepare JSON builder obj
+        GsonBuilder gsonb = new GsonBuilder();
+        Gson gson = gsonb.create();
+        //Volley submission method
+        int method = (Method.PUT);
+
+        try {
+
+            //prep request
+            JsonObjectRequest jsonRequest =
+                    new JsonObjectRequest
+                            (
+                                    method,
+                                    LOCATION_URL,
+                                    new JSONObject(gson.toJson(point,LocationPoint.class)),
+                                    listener,
+                                    errorListener
+                            );
+
+            jsonRequest.setShouldCache(false);
+            jsonRequest.setTag(tag);
+
+            //add request to Volley que for execution
+            queue.add(jsonRequest);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
     }
 

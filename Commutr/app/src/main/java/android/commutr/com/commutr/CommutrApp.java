@@ -34,7 +34,9 @@ public class CommutrApp extends Application {
     public static final String ACTION_TYPE = "action_type";
     public static final String CONNECT = "connect";
     public static final String DISCONNECT = "disconnect";
-    public static GoogleApiClient mGoogleApiClient;
+    public static GoogleApiClient googleApiClient;
+    public static GoogleApiClient activityRecognitionClient;
+    public static String activityType = "N/A";
 
     public String getUserEmail(){
         return this.userEmail;

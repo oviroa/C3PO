@@ -18,28 +18,28 @@ public class LocationPoint {
 //    }
 
     private String device_identifier;
-    private int timestamp;
-    private float lat;
-    private float lon;
+    private long timestamp;
+    private double lat;
+    private double lon;
     private float speed;
     private float horizontal_accuracy;
     private float vertical_accuracy;
     private float course;
-    private float activity;
+    private String activity;
 
-    public void setDevice_identifier(String device_identifier) {
+    public void setDeviceIdentifier(String device_identifier) {
         this.device_identifier = device_identifier;
     }
 
-    public void setTimestamp(int timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 
-    public void setLat(float lat) {
+    public void setLat(double lat) {
         this.lat = lat;
     }
 
-    public void setLon(float lon) {
+    public void setLon(double lon) {
         this.lon = lon;
     }
 
@@ -59,7 +59,7 @@ public class LocationPoint {
         this.course = course;
     }
 
-    public void setActivity(float activity) {
+    public void setActivity(String activity) {
         this.activity = activity;
     }
 
@@ -68,15 +68,15 @@ public class LocationPoint {
         return device_identifier;
     }
 
-    public int getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public float getLat() {
+    public double getLat() {
         return lat;
     }
 
-    public float getLon() {
+    public double getLon() {
         return lon;
     }
 
@@ -96,7 +96,7 @@ public class LocationPoint {
         return course;
     }
 
-    public float getActivity() {
+    public String getActivity() {
         return activity;
     }
 }
