@@ -10,6 +10,7 @@ import android.os.Bundle;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
+import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
 
 /**
@@ -22,16 +23,19 @@ public class ActivityRecognitionConnectingService extends IntentService implemen
 
     @Override
     protected void onHandleIntent(Intent intent) {
-
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
         //create intent
         Intent recognitionIntent = new Intent(getApplicationContext(), ActivityRecognitionProcessingService.class);
         activityRecognitionPendingIntent = PendingIntent.getService(getApplicationContext(), 0, recognitionIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         switch(intent.getStringExtra(CommutrApp.ACTION_TYPE)) {
             case CommutrApp.CONNECT:
                 connectActivityRecognitionClient();
+                mixpanel.track(getResources().getString(R.string.activity_monitoring_started), null);
                 break;
             case CommutrApp.DISCONNECT:
                 disconnectActivityRecognitionClient();
+                mixpanel.track(getResources().getString(R.string.activity_monitoring_stopped), null);
                 break;
         }
     }

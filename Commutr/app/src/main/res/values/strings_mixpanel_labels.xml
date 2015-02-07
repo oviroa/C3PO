@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="application_started">androidApplicationStarted</string>
     <string name="application_stopped">androidApplicationStopped</string>
     <string name="user_email">$email</string>
     <string name="commute_submitted">androidCommuteSubmitted</string>
     <string name="commute_cancelled">androidCommuteCancelled</string>
     <string name="commute_edited">androidCommuteEdited</string>
-
+    <string name="location_monitoring_started">androidLocationMonitoringStarted</string>
+    <string name="location_monitoring_stopped">androidLocationMonitoringStopped</string>
+    <string name="activity_monitoring_started">androidActivityMonitoringStarted</string>
+    <string name="activity_monitoring_stopped">androidActivityMonitoringStopped</string>
+    <string name="device_rebooted">androidDeviceRebooted</string>
 </resources>

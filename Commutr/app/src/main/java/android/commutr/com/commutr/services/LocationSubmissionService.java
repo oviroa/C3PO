@@ -22,6 +22,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
 import org.json.JSONObject;
 
@@ -112,7 +113,9 @@ public class LocationSubmissionService extends Service
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
         switch(intent.getStringExtra(CommutrApp.ACTION_TYPE)) {
              case CommutrApp.CONNECT:
                  ((CommutrApp)getApplicationContext()).setGoogleApiClient( new GoogleApiClient.Builder(this)
@@ -122,6 +125,7 @@ public class LocationSubmissionService extends Service
                 .build());
                  ((CommutrApp)getApplicationContext()).getGoogleApiClient().connect();
                  Alarms.startActivityRecognition(getApplicationContext());
+                 mixpanel.track(getResources().getString(R.string.location_monitoring_started), null);
                  break;
             case CommutrApp.DISCONNECT:
                  if(((CommutrApp)getApplicationContext()).getGoogleApiClient() != null
@@ -132,6 +136,7 @@ public class LocationSubmissionService extends Service
                      ((CommutrApp)getApplicationContext()).setGoogleApiClient(null);
                  }
                  Alarms.stopActivityRecognition(getApplicationContext());
+                 mixpanel.track(getResources().getString(R.string.location_monitoring_stopped), null);
                  stopSelf();
                  break;
          }
