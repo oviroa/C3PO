@@ -14,21 +14,8 @@ import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
 public class CommutrApp extends Application {
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-        MixpanelAPI mixpanel =
-                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
-        mixpanel.getPeople().identify(mixpanel.getDistinctId());
-        mixpanel.track(getResources().getString(R.string.application_started), null);
-    }
-
     private String userEmail;
-
     private Commute currentCommute;
-
-    //alarm events for prediction reminder
     public static final String LOCATION_START_EVENT = "location_start_event";
     public static final String LOCATION_END_EVENT = "location_end_event";
     public static final String ACTION_TYPE = "action_type";
@@ -37,6 +24,15 @@ public class CommutrApp extends Application {
     public static String activityType = "N/A";
     private GoogleApiClient googleApiClient;
     private  GoogleApiClient activityRecognitionClient;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
+        mixpanel.track(getResources().getString(R.string.application_started), null);
+    }
 
     public GoogleApiClient getGoogleApiClient() {
         return googleApiClient;

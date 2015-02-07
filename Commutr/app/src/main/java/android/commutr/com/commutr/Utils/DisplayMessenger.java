@@ -10,11 +10,9 @@ import android.widget.Toast;
  */
 public class DisplayMessenger {
 
-    public static void showBasicToast(Context context, String message)
-    {
+    public static void showBasicToast(Context context, String message) {
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
         toast.setGravity(Gravity.CENTER_VERTICAL, 0, 280);
         toast.show();
     }
-
 }

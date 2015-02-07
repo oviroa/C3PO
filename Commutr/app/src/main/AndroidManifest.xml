@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="android.commutr.com.commutr"
-    android:versionCode="1"
-    android:versionName="0.1">
+    android:versionCode="2"
+    android:versionName="0.1.1">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -14,38 +14,32 @@
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
-
     <application
         android:name=".CommutrApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/TranslucentStatusBar" >
-
         <service
             android:name="android.commutr.com.commutr.services.LocationSubmissionService"
             android:exported="false"
             android:label="@string/app_name" >
         </service>
-
         <service
             android:name=".services.ActivityRecognitionProcessingService"
             android:exported="false"
             android:label="@string/app_name" >
         </service>
-
         <service
             android:name=".services.ActivityRecognitionConnectingService"
             android:exported="false"
             android:label="@string/app_name" >
         </service>
-
         <receiver android:name=".services.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
         <activity
             android:name=".base.BaseActivity"
             android:label="@string/title_activity_base" >
@@ -67,5 +61,4 @@
         </activity>
         <meta-data android:name="com.crashlytics.ApiKey" android:value="f8162238dc0de3bfea52e05090ad6639bc94d6c0"/>
     </application>
-
 </manifest>

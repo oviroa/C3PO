@@ -11,7 +11,7 @@ import java.util.Calendar;
 
 /**
  * Created by oviroa on 2/6/15.
- * Runs when phine reboots
+ * Runs when phone reboots
  * Resets alarms
  */
 public class BootReceiver extends BroadcastReceiver {

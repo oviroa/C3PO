@@ -35,7 +35,6 @@ public class ClientUtility {
         return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
     }
 
-
     /**
      * Retrieves emails for user from account list
      * @param context
@@ -45,16 +44,13 @@ public class ClientUtility {
         Pattern emailPattern = Patterns.EMAIL_ADDRESS; // API level 8+
         Account[] accounts = AccountManager.get(context).getAccounts();
         List<String> emailList = new ArrayList<String>();
-
         for (Account account : accounts) {
             if (emailPattern.matcher(account.name).matches()) {
-
                 if(!emailList.contains(account.name)) {
                     emailList.add(account.name);
                 }
             }
         }
-
         return emailList;
     }
 
@@ -99,12 +95,9 @@ public class ClientUtility {
      * @param editable
      * @return
      */
-    public static Boolean isEmailValid(Editable editable)
-    {
+    public static Boolean isEmailValid(Editable editable) {
         if (editable == null)
             return false;
-
         return android.util.Patterns.EMAIL_ADDRESS.matcher(editable).matches();
     }
-
 }
