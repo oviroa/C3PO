@@ -10,23 +10,19 @@
     <string name="getting_to_the_pickup">Getting to the pickup</string>
     <string name="time_out_of_bounds">Pickup location is not open at the time you selected</string>
     <string name="day_out_of_bounds">Pickup location is not open on the day you selected</string>
-
     <string name="driver">Driver</string>
     <string name="rider">Rider</string>
-
     <string-array name="type_of_commuter_options">
         <item>@string/driver</item>
         <item>@string/rider</item>
     </string-array>
-
     <string name="walking">Walking</string>
     <string name="bike">By bike</string>
     <string name="car">By car</string>
-
-
     <string-array name="getting_to_pickup_options">
         <item>@string/walking</item>
         <item>@string/bike</item>
         <item>@string/car</item>
     </string-array>
+    <string name="google_play_services_error">This application requires Google Play Services. Please install!</string>
 </resources>

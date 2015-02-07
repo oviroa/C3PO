@@ -4,31 +4,23 @@
     <color name="neutral_background">#FFFFFF</color>
     <integer name="pull_refresh_offset">100</integer>
     <integer name="web_view_load_timeout">13000</integer>
-
     <integer name="latest_commute_set_time">8</integer>
     <integer name="earliest_commute_set_time">7</integer>
-
     <integer name="latest_location_set_time">9</integer>
     <integer name="earliest_location_set_time">6</integer>
-
     <string name="commutr_preferences">commutrPreferences</string>
     <string name="commutr_email_address">commutrEmailAddress</string>
     <string name="commutr_current_commute">commutrCurrentCommute</string>
-
-
     <string name="default_pickup_location">TEST</string>
     <!--<string name="default_pickup_location">ORND1</string>-->
     <string name="default_dropoff_location">SFFIDI</string>
-
-
     <integer name="walking">1</integer>
     <integer name="bike">2</integer>
     <integer name="car">5</integer>
     <integer name="driver">3</integer>
     <integer name="rider">4</integer>
-
     <string name="mixpanel_token">20e050ab3318976604d224ee9c47dc1f</string>
-
+    <string name="play_services_link">market://details?id=com.google.android.gms</string>
     <integer name="location_update_interval">120000</integer>
     <integer name="activity_type_update_interval">30000</integer>
 

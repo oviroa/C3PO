@@ -2,15 +2,19 @@ package android.commutr.com.commutr;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.commutr.com.commutr.base.BaseActivity;
 import android.commutr.com.commutr.model.Commute;
+import android.commutr.com.commutr.services.GeofenceService;
 import android.commutr.com.commutr.utils.Alarms;
 import android.commutr.com.commutr.utils.ClientUtility;
 import android.commutr.com.commutr.utils.DisplayMessenger;
 import android.commutr.com.commutr.utils.Installation;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.TypedArray;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -26,14 +30,19 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
+
 import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -46,17 +55,34 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     private static Calendar selectedPickupDateTime;
     private boolean viewIsInEditMode = true;
     private int screenOrientation;
+    private LocationServices mLocationService;
+    private PendingIntent mGeofenceRequestIntent;
+    private GoogleApiClient mApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_commute);
         loadMixpanelSuperData();
+        checkAndHandlePlayServices();
         handleProgressBar();
         setSpinners();
         setNextAvailableDate();
         handleButtonEvents();
         selectedPickupDateTime = nextAvailableCalendar;
+    }
+
+    private void checkAndHandlePlayServices() {
+        if(!ClientUtility.isGooglePlayServicesAvailable(getApplicationContext())) {
+            MixpanelAPI mixpanel =
+                    MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+            mixpanel.getPeople().identify(mixpanel.getDistinctId());
+            mixpanel.track(getResources().getString(R.string.no_play_services), null);
+            DisplayMessenger.showBasicToast(getApplicationContext(),getResources().getString(R.string.google_play_services_error));
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(getResources().getString(R.string.play_services_link)));
+            startActivity(intent);
+        }
     }
 
     private void registerLocationAlarms() {
@@ -630,5 +656,10 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         MixpanelAPI mixpanel =
                 MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
         mixpanel.flush();
+    }
+
+   private PendingIntent getGeofenceTransitionPendingIntent() {
+        Intent intent = new Intent(this, GeofenceService.class);
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

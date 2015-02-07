@@ -1,4 +1,4 @@
-package android.commutr.com.commutr.services;
+package android.commutr.com.commutr.receivers;
 
 import android.commutr.com.commutr.R;
 import android.commutr.com.commutr.managers.DataManager;

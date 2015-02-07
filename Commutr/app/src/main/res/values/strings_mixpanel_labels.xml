@@ -5,6 +5,7 @@
     <string name="user_email">$email</string>
     <string name="commute_submitted">androidCommuteSubmitted</string>
     <string name="commute_cancelled">androidCommuteCancelled</string>
+    <string name="no_play_services">androidNoPlayServices</string>
     <string name="commute_edited">androidCommuteEdited</string>
     <string name="location_monitoring_started">androidLocationMonitoringStarted</string>
     <string name="location_monitoring_stopped">androidLocationMonitoringStopped</string>

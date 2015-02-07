@@ -12,7 +12,11 @@ import android.provider.Settings.Secure;
 import android.provider.Settings.SettingNotFoundException;
 import android.text.Editable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,5 +103,18 @@ public class ClientUtility {
         if (editable == null)
             return false;
         return android.util.Patterns.EMAIL_ADDRESS.matcher(editable).matches();
+    }
+
+    public static boolean isGooglePlayServicesAvailable(Context context) {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
+        if (ConnectionResult.SUCCESS == resultCode) {
+            if (Log.isLoggable(Logger.LOG_PREFIX, Log.DEBUG)) {
+                Logger.debug("Google Play services","available");
+            }
+            return true;
+        } else {
+            Logger.error("Google Play services","unavailable");
+            return false;
+        }
     }
 }

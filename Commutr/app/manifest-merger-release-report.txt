@@ -94,7 +94,7 @@ ADDED from AndroidManifest.xml:33:9
 		ADDED from AndroidManifest.xml:35:13
 	android:name
 		ADDED from AndroidManifest.xml:34:13
-receiver#android.commutr.com.commutr.services.BootReceiver
+receiver#android.commutr.com.commutr.receivers.BootReceiver
 ADDED from AndroidManifest.xml:38:9
 	android:name
 		ADDED from AndroidManifest.xml:38:19
