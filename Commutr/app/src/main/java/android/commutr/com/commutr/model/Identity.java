@@ -8,9 +8,7 @@ import java.io.Serializable;
 public class Identity implements Serializable {
 
     private String email;
-
     private String version;
-
     private String identifier;
 
     public void setEmail(String email) {
@@ -26,7 +24,6 @@ public class Identity implements Serializable {
     }
 
     public String getEmail() {
-
         return email;
     }
 

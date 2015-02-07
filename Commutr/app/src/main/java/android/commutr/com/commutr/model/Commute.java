@@ -116,7 +116,6 @@ public class Commute implements Serializable
         return confirm_time;
     }
 
-
     public Commute() {
     }
 }

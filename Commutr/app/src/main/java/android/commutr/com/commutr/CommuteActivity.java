@@ -360,7 +360,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                             (getApplicationContext(),
                                                     getResources().getString(R.string.commute_confirmed_message));
                                     showFloatingUI();
-
                                     registerLocationAlarms();
 
                                 }

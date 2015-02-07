@@ -29,5 +29,7 @@
 
     <string name="mixpanel_token">20e050ab3318976604d224ee9c47dc1f</string>
 
+    <integer name="location_update_interval">120000</integer>
+    <integer name="activity_type_update_interval">1000</integer>
 
 </resources>

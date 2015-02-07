@@ -34,9 +34,25 @@ public class CommutrApp extends Application {
     public static final String ACTION_TYPE = "action_type";
     public static final String CONNECT = "connect";
     public static final String DISCONNECT = "disconnect";
-    public static GoogleApiClient googleApiClient;
-    public static GoogleApiClient activityRecognitionClient;
     public static String activityType = "N/A";
+    private GoogleApiClient googleApiClient;
+    private  GoogleApiClient activityRecognitionClient;
+
+    public GoogleApiClient getGoogleApiClient() {
+        return googleApiClient;
+    }
+
+    public GoogleApiClient getActivityRecognitionClient() {
+        return activityRecognitionClient;
+    }
+
+    public void setGoogleApiClient(GoogleApiClient googleApiClient) {
+        this.googleApiClient = googleApiClient;
+    }
+
+    public void setActivityRecognitionClient(GoogleApiClient activityRecognitionClient) {
+        this.activityRecognitionClient = activityRecognitionClient;
+    }
 
     public String getUserEmail(){
         return this.userEmail;
@@ -51,8 +67,6 @@ public class CommutrApp extends Application {
     }
 
     public Commute getCurrentCommute() {
-
         return currentCommute;
     }
-
 }

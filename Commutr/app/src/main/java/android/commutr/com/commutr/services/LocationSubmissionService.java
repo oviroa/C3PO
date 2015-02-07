@@ -2,8 +2,10 @@ package android.commutr.com.commutr.services;
 
 import android.app.Service;
 import android.commutr.com.commutr.CommutrApp;
+import android.commutr.com.commutr.R;
 import android.commutr.com.commutr.managers.DataManager;
 import android.commutr.com.commutr.model.LocationPoint;
+import android.commutr.com.commutr.utils.Alarms;
 import android.commutr.com.commutr.utils.Installation;
 import android.commutr.com.commutr.utils.Logger;
 import android.content.Intent;
@@ -29,47 +31,24 @@ import org.json.JSONObject;
 public class LocationSubmissionService extends Service
         implements GoogleApiClient.ConnectionCallbacks,
                     GoogleApiClient.OnConnectionFailedListener,
-                    LocationListener{
+                    LocationListener {
 
-
-    //request queue for server calls
     private RequestQueue locationPointVolley;
-    //tag for Volley
     private final Object TAG = new Object();
-
     private LocationRequest mLocationRequest;
 
-    public LocationSubmissionService()
-    {
+    public LocationSubmissionService(){
 
     }
 
     @Override
     public void onConnected(Bundle bundle) {
-
+        GoogleApiClient googleApiClient = ((CommutrApp)getApplicationContext()).getGoogleApiClient();
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        mLocationRequest.setInterval(120000);
-
+        mLocationRequest.setInterval(getApplicationContext().getResources().getInteger(R.integer.location_update_interval));
         LocationServices.FusedLocationApi.requestLocationUpdates(
-                CommutrApp.googleApiClient, mLocationRequest, this);
-
-    }
-
-
-    private void startActivityRecognition() {
-
-        final Intent recognitionIntent = new Intent(getApplicationContext(), ActivityRecognitionConnectingService.class);
-        recognitionIntent.putExtra(CommutrApp.ACTION_TYPE, CommutrApp.CONNECT);
-        startService(recognitionIntent);
-    }
-
-
-    private void stopActivityRecognition() {
-
-        final Intent recognitionIntent = new Intent(getApplicationContext(), ActivityRecognitionConnectingService.class);
-        recognitionIntent.putExtra(CommutrApp.ACTION_TYPE, CommutrApp.DISCONNECT);
-        startService(recognitionIntent);
+                googleApiClient, mLocationRequest, this);
     }
 
     @Override
@@ -85,11 +64,9 @@ public class LocationSubmissionService extends Service
 
     @Override
     public void onLocationChanged(Location location) {
-
         if(locationPointVolley == null) {
             locationPointVolley = Volley.newRequestQueue(getApplicationContext());
         }
-
         DataManager.getInstance().sendLocationPoint
                 (
                         getLocationPoint(location),
@@ -112,19 +89,13 @@ public class LocationSubmissionService extends Service
                             public void onErrorResponse(VolleyError error) {
 
                                 error.printStackTrace();
-
-                            }
+                           }
                         }
-
-
                 );
-
     }
 
     private LocationPoint getLocationPoint(Location location){
-
         LocationPoint point = new LocationPoint();
-
         point.setDeviceIdentifier(Installation.id(getApplicationContext()));
         point.setTimestamp(System.currentTimeMillis() / 1000L);
         point.setLat(location.getLatitude());
@@ -132,54 +103,39 @@ public class LocationSubmissionService extends Service
         point.setSpeed(location.getSpeed());
         point.setHorizontalAccuracy(location.getAccuracy());
         point.setActivity(CommutrApp.activityType);
-
         return point;
-
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-         switch(intent.getStringExtra(CommutrApp.ACTION_TYPE)) {
-
+        switch(intent.getStringExtra(CommutrApp.ACTION_TYPE)) {
              case CommutrApp.CONNECT:
-
-                 CommutrApp.googleApiClient = new GoogleApiClient.Builder(this)
+                 ((CommutrApp)getApplicationContext()).setGoogleApiClient( new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
-                .build();
-
-                 CommutrApp.googleApiClient.connect();
-
-                 startActivityRecognition();
-
+                .build());
+                 ((CommutrApp)getApplicationContext()).getGoogleApiClient().connect();
+                 Alarms.startActivityRecognition(getApplicationContext());
                  break;
-
-             case CommutrApp.DISCONNECT:
-
-                 if(CommutrApp.googleApiClient != null) {
-
+            case CommutrApp.DISCONNECT:
+                 if(((CommutrApp)getApplicationContext()).getGoogleApiClient() != null
+                         && ((CommutrApp)getApplicationContext()).getGoogleApiClient().isConnected()) {
                      LocationServices.FusedLocationApi
-                             .removeLocationUpdates(CommutrApp.googleApiClient, this);
-                     CommutrApp.googleApiClient.disconnect();
-                     CommutrApp.googleApiClient = null;
+                             .removeLocationUpdates(((CommutrApp) getApplicationContext()).getGoogleApiClient(), this);
+                     ((CommutrApp)getApplicationContext()).getGoogleApiClient().disconnect();
+                     ((CommutrApp)getApplicationContext()).setGoogleApiClient(null);
                  }
-
-                 stopActivityRecognition();
-
+                 Alarms.stopActivityRecognition(getApplicationContext());
                  stopSelf();
-
                  break;
          }
-
         return Service.START_REDELIVER_INTENT;
-
     }
 
 }

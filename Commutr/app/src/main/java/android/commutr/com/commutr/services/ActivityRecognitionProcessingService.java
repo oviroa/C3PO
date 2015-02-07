@@ -12,19 +12,14 @@ import com.google.android.gms.location.DetectedActivity;
  */
 public class ActivityRecognitionProcessingService extends IntentService {
 
-    private static final String TAG ="ActivityRecognition";
-
     public ActivityRecognitionProcessingService() {
         super("ActivityRecognitionService");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-
         ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
-
         CommutrApp.activityType = getFriendlyActivityName(result.getMostProbableActivity().getType());
-
         Logger.warn("ACTIVITY TYPE",CommutrApp.activityType);
     }
 
@@ -46,8 +41,6 @@ public class ActivityRecognitionProcessingService extends IntentService {
                 return "N/A";
         }
     }
-
-
 }
 
 

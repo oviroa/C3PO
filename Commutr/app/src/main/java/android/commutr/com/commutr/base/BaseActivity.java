@@ -16,23 +16,20 @@ import android.text.SpannableString;
 public class BaseActivity extends ActionBarActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         displayIconInActionBar();
         decorateTitle();
     }
 
-    private void decorateTitle(){
-
+    private void decorateTitle() {
         SpannableString spannableString = new SpannableString(getTitle());
         spannableString.setSpan(new TypefaceSpan(this, "FuturaStd-Medium"), 0, spannableString.length(),
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         setTitle(spannableString);
     }
 
-    private void displayIconInActionBar(){
+    private void displayIconInActionBar() {
         ActionBar ab = getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(false);
         ab.setHomeButtonEnabled(true);
@@ -44,7 +41,7 @@ public class BaseActivity extends ActionBarActivity {
      * Retrieve instance of proxy that handles all model operations
      * @return
      */
-    public DataManager getDataManager(){
+    public DataManager getDataManager() {
         return DataManager.getInstance();
     }
 
@@ -52,13 +49,10 @@ public class BaseActivity extends ActionBarActivity {
      * Enhances bade onPause with new transition (fade) that will be used by all activities
      */
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
-
         //set default transition (fade)
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-
     }
 
 

@@ -10,26 +10,22 @@ import android.widget.Button;
  */
 public class CommutrButton extends Button {
 
-    public CommutrButton(Context context)
-    {
+    public CommutrButton(Context context) {
         super(context);
         init();
     }
 
-    public CommutrButton(Context context, AttributeSet attrs)
-    {
+    public CommutrButton(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public CommutrButton(Context context, AttributeSet attrs, int defStyle)
-    {
+    public CommutrButton(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
 
-    public void init()
-    {
+    public void init() {
         Typeface tf = Typeface.createFromAsset(getContext().getAssets(),
                 "fonts/FuturaStd-Medium.ttf");
         setTypeface(tf);
