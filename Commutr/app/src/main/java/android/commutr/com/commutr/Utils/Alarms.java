@@ -27,6 +27,7 @@ public class Alarms {
 
     public static void unRegisterLocationAlarms(Context appContext) {
         stopLocationTrackingService(appContext);
+        stopActivityRecognition(appContext);
         unregisterLocationTrackingStart(appContext);
         unregisterLocationTrackingEnd(appContext);
     }
@@ -116,8 +117,8 @@ public class Alarms {
 //            calendarStart.set(Calendar.MINUTE,0);
 //            calendarStart.set(Calendar.SECOND,0);
             Logger.warn("REGISTER","CALENDAR START");
-            calendarStart.set(Calendar.HOUR_OF_DAY,16);
-            calendarStart.set(Calendar.MINUTE,52);
+            calendarStart.set(Calendar.HOUR_OF_DAY,17);
+            calendarStart.set(Calendar.MINUTE,47);
             calendarStart.set(Calendar.SECOND,0);
             registerStartAlarm(appContext, calendarStart);
         }
@@ -130,8 +131,8 @@ public class Alarms {
 //        commuteCalendar.set(Calendar.SECOND,0);
 //        registerEndAlarm(appContext, commuteCalendar);
         Calendar calendarEnd = Calendar.getInstance();
-        calendarEnd.set(Calendar.HOUR_OF_DAY,16);
-        calendarEnd.set(Calendar.MINUTE,54);
+        calendarEnd.set(Calendar.HOUR_OF_DAY,21);
+        calendarEnd.set(Calendar.MINUTE,30);
         calendarEnd.set(Calendar.SECOND,0);
         registerEndAlarm(appContext, calendarEnd);
     }

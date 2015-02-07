@@ -79,7 +79,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     }
 
 
-    public void registerLocationAlarms() {
+    private void registerLocationAlarms() {
 
         Commute commute = getDataManager().getCachedCommute(getApplicationContext());
 

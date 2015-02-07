@@ -45,7 +45,7 @@ public class LocationSubmissionService extends Service
     public void onConnected(Bundle bundle) {
         GoogleApiClient googleApiClient = ((CommutrApp)getApplicationContext()).getGoogleApiClient();
         mLocationRequest = LocationRequest.create();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(getApplicationContext().getResources().getInteger(R.integer.location_update_interval));
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 googleApiClient, mLocationRequest, this);
