@@ -111,6 +111,29 @@
 
                 </android.support.v7.widget.CardView>
 
+                <android.support.v7.widget.CardView
+                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/status_card_view"
+                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    card_view:cardCornerRadius="4dp"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:visibility="gone">
+
+                    <android.commutr.com.commutr.base.CommutrTextView
+                        android:id="@+id/status_text_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@string/requested"
+                        android:padding="@dimen/activity_vertical_margin"
+                        android:textColor="@color/top_bar_background"
+                        android:textStyle="bold"
+                        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+                </android.support.v7.widget.CardView>
+
 
                 <android.support.v7.widget.CardView
                     xmlns:card_view="http://schemas.android.com/apk/res-auto"

@@ -30,6 +30,7 @@ public class DataManager {
     private static String COMMUTE_URL = "https://just-armor-726.appspot.com/api/commute";
     private static String IDENTITY_URL = "https://just-armor-726.appspot.com/api/device";
     private static String LOCATION_URL = "https://just-armor-726.appspot.com/api/point";
+    private static String COMMUTE_CONFIRMATION_URL = "https://just-armor-726.appspot.com/api/v2/commute/";
 
     /**
      * Retrieves singleton instance
@@ -113,7 +114,6 @@ public class DataManager {
                                     listener,
                                     errorListener
                             );
-
             jsonRequest.setShouldCache(false);
             jsonRequest.setTag(tag);
             //add request to Volley que for execution
@@ -217,5 +217,52 @@ public class DataManager {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void cacheCommuteKey(String key, Context context) {
+
+        ((CommutrApp)context).setCommuteKey(key);
+        //store in preferences
+        SharedPreferences settings;
+        SharedPreferences.Editor editor;
+        settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
+        editor = settings.edit();
+        //store key
+        editor.putString(context.getResources().getString(R.string.commutr_commute_key), key);
+        editor.commit();
+    }
+
+    public String getCachedCommuteKey(Context context) {
+        //mem first
+        String key = ((CommutrApp)context).getCommuteKey();
+        if(key == null) {
+            SharedPreferences settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
+            key = settings.getString(context.getResources().getString(R.string.commutr_commute_key), null);
+        }
+        return key;
+    }
+
+    public void retrieveCommuteByKey( String key,
+                               Context context,
+                               RequestQueue queue,
+                               Object tag,
+                               Listener<JSONObject> listener,
+                               ErrorListener errorListener) {
+        int method = (Method.PUT);
+        //prep request
+        JsonObjectRequest jsonRequest =
+                new JsonObjectRequest
+                        (
+                                method,
+                                new StringBuilder().append(COMMUTE_CONFIRMATION_URL).append(key).toString(),
+                                null,
+                                listener,
+                                errorListener
+                        );
+
+        jsonRequest.setShouldCache(false);
+        jsonRequest.setTag(tag);
+        //add request to Volley que for execution
+        queue.add(jsonRequest);
     }
 }

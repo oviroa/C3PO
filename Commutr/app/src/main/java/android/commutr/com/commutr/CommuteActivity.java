@@ -5,12 +5,15 @@ import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.commutr.com.commutr.base.BaseActivity;
+import android.commutr.com.commutr.base.CommutrTextView;
 import android.commutr.com.commutr.model.Commute;
+import android.commutr.com.commutr.model.TurboCommute;
 import android.commutr.com.commutr.services.GeofenceService;
 import android.commutr.com.commutr.utils.Alarms;
 import android.commutr.com.commutr.utils.ClientUtility;
 import android.commutr.com.commutr.utils.DisplayMessenger;
 import android.commutr.com.commutr.utils.Installation;
+import android.commutr.com.commutr.utils.Logger;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.TypedArray;
@@ -18,6 +21,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.CardView;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.view.animation.AnimationUtils;
@@ -39,11 +43,17 @@ import com.android.volley.toolbox.Volley;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class CommuteActivity extends BaseActivity implements OnItemSelectedListener{
@@ -55,9 +65,9 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     private static Calendar selectedPickupDateTime;
     private boolean viewIsInEditMode = true;
     private int screenOrientation;
-    private LocationServices mLocationService;
-    private PendingIntent mGeofenceRequestIntent;
-    private GoogleApiClient mApiClient;
+    private LocationServices locationService;
+    private PendingIntent geofenceRequestIntent;
+    private GoogleApiClient apiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -236,6 +246,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                 setRequestedOrientation(screenOrientation);
                                 swipeView.setRefreshing(false);
                                 if(result.has("error")) {
+                                    showCancelButton();
                                     DisplayMessenger.showBasicToast
                                             (getApplicationContext(),
                                                     getResources().getString(R.string.commute_error_message));
@@ -246,6 +257,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                     hideFloatingUI();
                                     enableFormElements();
                                     getDataManager().cacheCommute(null, getApplicationContext());
+                                    getDataManager().cacheCommuteKey(null, getApplicationContext());
                                     setNextAvailableDate();
                                     selectedPickupDateTime = nextAvailableCalendar;
                                     Alarms.unRegisterLocationAlarms(getApplicationContext());
@@ -255,6 +267,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                         new ErrorListener() {
                             public void onErrorResponse(VolleyError error) {
                                 setRequestedOrientation(screenOrientation);
+                                showCancelButton();
                                 swipeView.setRefreshing(false);
                                 DisplayMessenger.showBasicToast
                                         (getApplicationContext(),
@@ -286,12 +299,14 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                             (getApplicationContext(),
                                                     getResources().getString(R.string.commute_error_message));
                                 } else {
-
+                                    longInfo(result.toString());
+                                    handleCommuteRequestResponse(result, commute);
                                     getDataManager().cacheCommute(commute,getApplicationContext());
                                     DisplayMessenger.showBasicToast
                                             (getApplicationContext(),
                                                     getResources().getString(R.string.commute_confirmed_message));
                                     showFloatingUI();
+                                    handleReservationStateDisplay(getResources().getString(R.string.requested));
                                     registerLocationAlarms();
                                 }
                             }
@@ -308,6 +323,46 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                         }
                 );
     }
+
+    private void handleReservationStateDisplay(String message) {
+        CardView statusCardView = (CardView) findViewById(R.id.status_card_view);
+        CommutrTextView statusTextView = (CommutrTextView) findViewById(R.id.status_text_view);
+        statusTextView.setText(message);
+        if(statusCardView.getVisibility() == View.GONE) {
+            statusCardView.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.abc_slide_in_top));
+            statusCardView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void handleCommuteRequestResponse(JSONObject result, Commute commute) {
+        if(result.has("commute")) {
+            try {
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                Gson gson = gsonBuilder.create();
+                Type arrayListType = new TypeToken<ArrayList<TurboCommute>>() {}.getType();
+                ArrayList<TurboCommute> commutes = gson.fromJson(result.get("commute").toString(), arrayListType);
+                for (TurboCommute tCommute : commutes) {
+                    if (tCommute.getUniqueId().equals(commute.getUniqueId())) {
+                        getDataManager().cacheCommuteKey(tCommute.getKey(), getApplicationContext());
+                        Alarms.registerCommuteConfirmationRequest(getApplicationContext());
+                        break;
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private void longInfo(String str) {
+        if(str.length() > 4000) {
+            Logger.warn("RESPONSE",str.substring(0, 4000));
+            longInfo(str.substring(4000));
+        } else
+            Logger.warn("RESPONSE", str);
+    }
+
 
     private Commute buildCommute(){
         Commute myCommute = new Commute();
@@ -601,6 +656,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
             populateUIWithCommute(currentCommute);
         } else {
             getDataManager().cacheCommute(null, getApplicationContext());
+            getDataManager().cacheCommuteKey(null, getApplicationContext());
             setNextAvailableDate();
             selectedPickupDateTime = nextAvailableCalendar;
             if(!viewIsInEditMode) {

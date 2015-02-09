@@ -20,10 +20,12 @@ public class CommutrApp extends Application {
     public static final String LOCATION_END_EVENT = "location_end_event";
     public static final String ACTION_TYPE = "action_type";
     public static final String CONNECT = "connect";
+   // public static final String REQUEST_CONFIRMATION = "request_confirmation";
     public static final String DISCONNECT = "disconnect";
     public static String activityType = "N/A";
     private GoogleApiClient googleApiClient;
     private  GoogleApiClient activityRecognitionClient;
+    private String commuteKey;
 
     @Override
     public void onCreate() {
@@ -32,6 +34,15 @@ public class CommutrApp extends Application {
                 MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
         mixpanel.getPeople().identify(mixpanel.getDistinctId());
         mixpanel.track(getResources().getString(R.string.application_started), null);
+    }
+
+    public String getCommuteKey() {
+        return commuteKey;
+    }
+
+    public void setCommuteKey(String commuteKey) {
+
+        this.commuteKey = commuteKey;
     }
 
     public GoogleApiClient getGoogleApiClient() {

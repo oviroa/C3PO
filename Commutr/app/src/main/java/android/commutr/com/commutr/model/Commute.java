@@ -20,23 +20,14 @@ public class Commute implements Serializable
 //            'confirm_time': 'int - unix timestamp of the moment the confirm button was pressed'
 
     private String device_identifier;
-
     private String email;
-
     private String unique_id;
-
     private int transport_mode_to_pickup;
-
     private int transport_mode_to_dropoff;
-
     private String pickup_location;
-
     private String dropoff_location;
-
     private long scheduled_pickup_arrival_time;
-
     private long confirm_time;
-
     private long cancel_time;
 
     public long getCancelTime() {
@@ -46,7 +37,6 @@ public class Commute implements Serializable
     public void setCancelTime(Long cancel_time){
         this.cancel_time = cancel_time;
     }
-
 
     public void setDeviceIdentifier(String device_identifier) {
         this.device_identifier = device_identifier;
@@ -78,6 +68,10 @@ public class Commute implements Serializable
 
     public void setScheduledPickupArrivalTime(long scheduled_pickup_arrival_time) {
         this.scheduled_pickup_arrival_time = scheduled_pickup_arrival_time;
+    }
+
+    public String getUniqueId () {
+        return this.unique_id;
     }
 
     public void setConfirmTime(long confirm_time) {

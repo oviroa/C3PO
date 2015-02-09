@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.commutr.com.commutr.CommutrApp;
 import android.commutr.com.commutr.R;
 import android.commutr.com.commutr.services.ActivityRecognitionConnectingService;
+import android.commutr.com.commutr.services.CommuteConfirmationRequestService;
 import android.commutr.com.commutr.services.LocationSubmissionService;
 import android.content.Context;
 import android.content.Intent;
@@ -146,6 +147,24 @@ public class Alarms {
                                         0,
                                         alarmEndIntent,
                                         PendingIntent.FLAG_UPDATE_CURRENT
+                                )
+                );
+    }
+
+    public static void registerCommuteConfirmationRequest(Context appContext) {
+        Calendar calendar = Calendar.getInstance();
+        int delay = appContext.getResources().getInteger(R.integer.commute_confirmation_delay)*1000*60;
+        Intent commuteConfirmationIntent = new Intent(appContext, CommuteConfirmationRequestService.class);
+        ((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).set
+                (
+                        AlarmManager.RTC_WAKEUP,
+                        calendar.getTimeInMillis() + delay,
+                        PendingIntent.getService
+                                (
+                                        appContext,
+                                        0,
+                                        commuteConfirmationIntent,
+                                        PendingIntent.FLAG_ONE_SHOT
                                 )
                 );
     }
