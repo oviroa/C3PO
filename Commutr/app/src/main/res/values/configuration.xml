@@ -12,6 +12,7 @@
     <string name="commutr_email_address">commutrEmailAddress</string>
     <string name="commutr_current_commute">commutrCurrentCommute</string>
     <string name="commutr_commute_key">commutrCommuteKey</string>
+    <string name="commutr_commute_request_status">commutrCommuteRequestStatus</string>
     <string name="default_pickup_location">TEST</string>
     <!--<string name="default_pickup_location">ORND1</string>-->
     <string name="default_dropoff_location">SFFIDI</string>

@@ -265,4 +265,25 @@ public class DataManager {
         //add request to Volley que for execution
         queue.add(jsonRequest);
     }
+
+    public void cacheCommuteRequestStatus(String state, Context context) {
+
+        ((CommutrApp)context).setRequestState(state);
+        SharedPreferences settings;
+        SharedPreferences.Editor editor;
+        settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
+        editor = settings.edit();
+        editor.putString(context.getResources().getString(R.string.commutr_commute_request_status), state);
+        editor.commit();
+    }
+
+    public String getCachedCommuteRequestStatus(Context context) {
+        //mem first
+        String state = ((CommutrApp)context).getRequestState();
+        if(state == null) {
+            SharedPreferences settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
+            state = settings.getString(context.getResources().getString(R.string.commutr_commute_request_status), null);
+        }
+        return state;
+    }
 }

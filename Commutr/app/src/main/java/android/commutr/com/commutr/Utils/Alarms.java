@@ -10,7 +10,6 @@ import android.commutr.com.commutr.services.LocationSubmissionService;
 import android.content.Context;
 import android.content.Intent;
 import android.text.format.DateUtils;
-
 import java.util.Calendar;
 
 /**
@@ -56,7 +55,6 @@ public class Alarms {
         locationIntent.putExtra(CommutrApp.ACTION_TYPE, CommutrApp.DISCONNECT);
         appContext.startService(locationIntent);
     }
-
 
     private static void registerStartAlarm(Context appContext, Calendar calendar) {
         Intent alarmStartIntent = new Intent(CommutrApp.CONNECT);
@@ -168,5 +166,4 @@ public class Alarms {
                                 )
                 );
     }
-
 }

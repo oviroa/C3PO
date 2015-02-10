@@ -1,16 +1,15 @@
 package android.commutr.com.commutr.services;
 
 import android.app.IntentService;
+import android.commutr.com.commutr.CommutrApp;
 import android.commutr.com.commutr.R;
 import android.commutr.com.commutr.managers.DataManager;
 import android.commutr.com.commutr.utils.Logger;
 import android.content.Intent;
-
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -64,9 +63,6 @@ public class CommuteConfirmationRequestService extends IntentService {
     }
 
     private void processResponse(JSONObject response) {
-//        A confirmed commute is one that has confirm_time > 0 AND system_confirm_time > 0
-//        A cancelled commute is one that has cancel_time > 0 OR system_cance_time > 0
-//        A waitlisted commute is one that has system_waitlist_time > 0
         double confirmTime = -1;
         double systemConfirmTime = -1;
         double cancelTime = -1;
@@ -75,9 +71,7 @@ public class CommuteConfirmationRequestService extends IntentService {
         JSONObject commute;
         try {
             if(response.has("commute")) {
-
                 commute = response.getJSONObject("commute");
-
                 if(commute.has("confirm_timestamp")) {
                     confirmTime = (double)commute.get("confirm_timestamp");
                 }
@@ -93,7 +87,20 @@ public class CommuteConfirmationRequestService extends IntentService {
                 if(commute.has("system_waitlist_timestamp")) {
                     systemWaitlistTime = (int)commute.get("system_waitlist_timestamp");
                 }
-                Logger.warn("RESULTS JSON",confirmTime + " :: "+systemConfirmTime + " :: "+ cancelTime+ " :: "+systemCancelTime + " :: "+systemWaitlistTime);
+                Intent requestIntent = new Intent(CommutrApp.REQUEST_CONFIRMATION_EVENT);
+                if(confirmTime > 0 && systemConfirmTime > 0) {
+                    DataManager.getInstance().cacheCommuteRequestStatus(CommutrApp.REQUEST_CONFIRMED, getApplicationContext());
+                    requestIntent.putExtra(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_CONFIRMED);
+                    sendBroadcast(requestIntent);
+                } else if (cancelTime > 0 || systemCancelTime > 0) {
+                    DataManager.getInstance().cacheCommuteRequestStatus(CommutrApp.REQUEST_CANCELLED, getApplicationContext());
+                    requestIntent.putExtra(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_CANCELLED);
+                    sendBroadcast(requestIntent);
+                } else if (systemWaitlistTime > 0) {
+                    DataManager.getInstance().cacheCommuteRequestStatus(CommutrApp.REQUEST_WAITLISTED, getApplicationContext());
+                    requestIntent.putExtra(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_WAITLISTED);
+                    sendBroadcast(requestIntent);
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();

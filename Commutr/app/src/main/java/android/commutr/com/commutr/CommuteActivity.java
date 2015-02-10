@@ -2,6 +2,8 @@ package android.commutr.com.commutr;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.commutr.com.commutr.base.BaseActivity;
@@ -14,12 +16,16 @@ import android.commutr.com.commutr.utils.ClientUtility;
 import android.commutr.com.commutr.utils.DisplayMessenger;
 import android.commutr.com.commutr.utils.Installation;
 import android.commutr.com.commutr.utils.Logger;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.CardView;
 import android.text.format.DateFormat;
@@ -80,6 +86,8 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         setNextAvailableDate();
         handleButtonEvents();
         selectedPickupDateTime = nextAvailableCalendar;
+        IntentFilter comuteRequestFilter = new IntentFilter(CommutrApp.REQUEST_CONFIRMATION_EVENT);
+        registerReceiver(requestReceiver, comuteRequestFilter);
     }
 
     private void checkAndHandlePlayServices() {
@@ -299,7 +307,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                             (getApplicationContext(),
                                                     getResources().getString(R.string.commute_error_message));
                                 } else {
-                                    longInfo(result.toString());
                                     handleCommuteRequestResponse(result, commute);
                                     getDataManager().cacheCommute(commute,getApplicationContext());
                                     DisplayMessenger.showBasicToast
@@ -331,6 +338,8 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         if(statusCardView.getVisibility() == View.GONE) {
             statusCardView.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.abc_slide_in_top));
             statusCardView.setVisibility(View.VISIBLE);
+        } else {
+            statusCardView.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.abc_fade_in));
         }
     }
 
@@ -354,7 +363,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         }
     }
 
-
     private void longInfo(String str) {
         if(str.length() > 4000) {
             Logger.warn("RESPONSE",str.substring(0, 4000));
@@ -362,7 +370,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         } else
             Logger.warn("RESPONSE", str);
     }
-
 
     private Commute buildCommute(){
         Commute myCommute = new Commute();
@@ -490,6 +497,15 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
         gettingToPickupSpinner.setEnabled(true);
         showConfirmButton();
+        hideRequestStatus();
+    }
+
+    private void hideRequestStatus() {
+        CardView statusCardView = (CardView) findViewById(R.id.status_card_view);
+        if(statusCardView.getVisibility() == View.VISIBLE) {
+            statusCardView.setVisibility(View.GONE);
+            statusCardView.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out));
+        }
     }
 
     private void setNextAvailableDate(){
@@ -654,6 +670,11 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
           )
         {
             populateUIWithCommute(currentCommute);
+            String state = getDataManager().getCachedCommuteRequestStatus(getApplicationContext());
+            if(state != null) {
+                int id = getResources().getIdentifier(state, "string", "android.commutr.com.commutr");
+                handleReservationStateDisplay(getResources().getString(id));
+            }
         } else {
             getDataManager().cacheCommute(null, getApplicationContext());
             getDataManager().cacheCommuteKey(null, getApplicationContext());
@@ -712,10 +733,48 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         MixpanelAPI mixpanel =
                 MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
         mixpanel.flush();
+        try {
+            unregisterReceiver(requestReceiver);
+        } catch(IllegalArgumentException e) {
+            Logger.warn("Unregister receiver",e.getLocalizedMessage());
+        }
     }
 
    private PendingIntent getGeofenceTransitionPendingIntent() {
         Intent intent = new Intent(this, GeofenceService.class);
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    protected final BroadcastReceiver requestReceiver = new BroadcastReceiver(){
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(CommutrApp.REQUEST_CONFIRMATION_EVENT)) {
+                String state = intent.getStringExtra(CommutrApp.REQUEST_CONFIRMATION_STATE);
+                int id = getResources().getIdentifier(state, "string", "android.commutr.com.commutr");
+                handleReservationStateDisplay(getResources().getString(id));
+                showRequestConfirmationNotification(getResources().getString(id));
+            }
+        }
+    };
+
+    private void showRequestConfirmationNotification(String state) {
+
+        final Intent notificationIntent = new Intent(getApplicationContext(), CommuteActivity.class);
+
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        Notification notification = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(new StringBuilder().
+                        append(getResources().getString(R.string.request_response_notification_title).toLowerCase()).
+                        append(" ").
+                        append(state).toString())
+                .setDefaults(Notification.DEFAULT_LIGHTS)
+                .setContentText(getResources().getString(R.string.request_response_notification))
+                .setContentIntent(PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT))
+                .setAutoCancel(true).build();
+
+        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(1, notification);
     }
 }
