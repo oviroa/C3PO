@@ -106,12 +106,4 @@ public class CommuteConfirmationRequestService extends IntentService {
             e.printStackTrace();
         }
     }
-
-    private void longInfo(String str) {
-        if(str.length() > 4000) {
-            Logger.warn("RESPONSE",str.substring(0, 4000));
-            longInfo(str.substring(4000));
-        } else
-            Logger.warn("RESPONSE", str);
-    }
 }

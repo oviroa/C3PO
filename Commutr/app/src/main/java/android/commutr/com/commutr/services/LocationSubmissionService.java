@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
-
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -23,7 +22,6 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
-
 import org.json.JSONObject;
 
 /**
@@ -39,7 +37,6 @@ public class LocationSubmissionService extends Service
     private LocationRequest mLocationRequest;
 
     public LocationSubmissionService(){
-
     }
 
     @Override
@@ -60,7 +57,6 @@ public class LocationSubmissionService extends Service
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
     @Override
@@ -77,18 +73,13 @@ public class LocationSubmissionService extends Service
                         new Response.Listener<JSONObject>() {
 
                             public void onResponse(JSONObject result) {
-
-                                Logger.warn("LOCATION POINT",result.toString());
-
                                 if(result.has("error")) {
                                     Logger.warn("LOCATION POINT ERROR",result.toString());
                                 }
-
                             }
                         },
                         new Response.ErrorListener() {
                             public void onErrorResponse(VolleyError error) {
-
                                 error.printStackTrace();
                            }
                         }
@@ -142,5 +133,4 @@ public class LocationSubmissionService extends Service
          }
         return Service.START_REDELIVER_INTENT;
     }
-
 }

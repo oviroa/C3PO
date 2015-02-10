@@ -17,6 +17,7 @@ import android.commutr.com.commutr.utils.DisplayMessenger;
 import android.commutr.com.commutr.utils.Installation;
 import android.commutr.com.commutr.utils.Logger;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -361,14 +362,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                 e.printStackTrace();
             }
         }
-    }
-
-    private void longInfo(String str) {
-        if(str.length() > 4000) {
-            Logger.warn("RESPONSE",str.substring(0, 4000));
-            longInfo(str.substring(4000));
-        } else
-            Logger.warn("RESPONSE", str);
     }
 
     private Commute buildCommute(){
@@ -758,22 +751,21 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     };
 
     private void showRequestConfirmationNotification(String state) {
-
         final Intent notificationIntent = new Intent(getApplicationContext(), CommuteActivity.class);
-
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
         Notification notification = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(new StringBuilder().
-                        append(getResources().getString(R.string.request_response_notification_title).toLowerCase()).
+                        append(getResources().getString(R.string.request_response_notification_title)).
                         append(" ").
-                        append(state).toString())
-                .setDefaults(Notification.DEFAULT_LIGHTS)
+                        append(state.toLowerCase()).toString())
+                .setColor(getResources().getColor(R.color.top_bar_background))
+                .setDefaults(Notification.DEFAULT_VIBRATE)
+                .setSound(Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
+                        + getApplicationContext().getPackageName() + "/raw/whisper"))
                 .setContentText(getResources().getString(R.string.request_response_notification))
                 .setContentIntent(PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT))
                 .setAutoCancel(true).build();
-
         NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1, notification);
     }
