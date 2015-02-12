@@ -7,6 +7,8 @@
         <item name="android:fitsSystemWindows">true</item>
         <item name="colorPrimary">@color/top_bar_background</item>
         <item name="android:dialogTheme">@style/CMTRDialogTheme</item>
+        <item name="android:alertDialogStyle">@style/CMTRDialogTheme</item>
+        <item name="android:alertDialogTheme">@style/CMTRDialogTheme</item>
     </style>
 
     <style name="CMTRDialogTheme" parent="Theme.AppCompat.Light.Dialog">

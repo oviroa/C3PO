@@ -13,6 +13,7 @@
     <string name="commutr_current_commute">commutrCurrentCommute</string>
     <string name="commutr_commute_key">commutrCommuteKey</string>
     <string name="commutr_commute_request_status">commutrCommuteRequestStatus</string>
+    <string name="commutr_check_in_status">commutrCheckInStatuss</string>
     <string name="default_pickup_location">TEST</string>
     <!--<string name="default_pickup_location">ORND1</string>-->
     <string name="default_dropoff_location">SFFIDI</string>
@@ -25,5 +26,10 @@
     <string name="play_services_link">market://details?id=com.google.android.gms</string>
     <integer name="location_update_interval">120000</integer>
     <integer name="activity_type_update_interval">30000</integer>
-    <integer name="commute_confirmation_delay">1</integer>
+    <integer name="commute_confirmation_delay">30</integer>
+    <integer name="geofence_radius">100</integer>
+    <!--<item name="default_location_lat" format="float" type="dimen">37.8036511</item>-->
+    <!--<item name="default_location_lon" format="float" type="dimen">-122.2716093</item>-->
+    <item name="default_location_lat" format="float" type="dimen">37.810730199999995</item>
+    <item name="default_location_lon" format="float" type="dimen">-122.20683469999999</item>
 </resources>

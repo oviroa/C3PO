@@ -29,12 +29,21 @@ public class Commute implements Serializable
     private long scheduled_pickup_arrival_time;
     private long confirm_time;
     private long cancel_time;
+    private long pickup_checkin_time;
+
+    public void setPickupCheckinTime(long pickup_checkin_time) {
+        this.pickup_checkin_time = pickup_checkin_time;
+    }
+
+    public long getPickupCheckinTime() {
+        return pickup_checkin_time;
+    }
 
     public long getCancelTime() {
         return cancel_time;
     }
 
-    public void setCancelTime(Long cancel_time){
+    public void setCancelTime(long cancel_time){
         this.cancel_time = cancel_time;
     }
 

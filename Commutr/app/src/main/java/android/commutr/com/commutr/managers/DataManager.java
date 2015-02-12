@@ -286,4 +286,23 @@ public class DataManager {
         }
         return state;
     }
+
+    public void cacheCheckInStatus(String state, Context context) {
+        ((CommutrApp)context).setCheckInState(state);
+        SharedPreferences settings;
+        SharedPreferences.Editor editor;
+        settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
+        editor = settings.edit();
+        editor.putString(context.getResources().getString(R.string.commutr_check_in_status), state);
+        editor.commit();
+    }
+
+    public String getCachedCheckInStatus(Context context) {
+        String state = ((CommutrApp)context).getCheckInState();
+        if(state == null) {
+            SharedPreferences settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
+            state = settings.getString(context.getResources().getString(R.string.commutr_check_in_status), null);
+        }
+        return state;
+    }
 }

@@ -19,4 +19,12 @@ public class Logger {
     public static void error(String header, String body){
         Log.e(new StringBuilder().append(LOG_PREFIX).append(header).toString(), body);
     }
+
+    public static void longInfo(String str) {
+        if(str.length() > 4000) {
+            Logger.warn("RESPONSE",str.substring(0, 4000));
+            longInfo(str.substring(4000));
+        } else
+            Logger.warn("RESPONSE", str);
+    }
 }

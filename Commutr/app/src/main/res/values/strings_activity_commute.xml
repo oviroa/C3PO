@@ -26,6 +26,7 @@
     </string-array>
     <string name="google_play_services_error">This application requires Google Play Services. Please install!</string>
     <string name="commute_confirmed_message">Your reservation was submitted.</string>
+    <string name="commute_check_in_message">You are checked-in.</string>
     <string name="commute_cancelled_message">Your reservation was cancelled.</string>
     <string name="commute_error_message">Traffic jam! Your carpool reservation failed. Try again later.</string>
     <string name="title_activity_commute">YOUR COMMUTE</string>
@@ -37,4 +38,7 @@
     <string name="confirm_my_commute">Reserve carpool</string>
     <string name="cancel_my_commute">Cancel your reservation</string>
     <string name="request_response_notification_title">Your commute request is</string>
+    <string name="check_in">Check-In</string>
+    <string name="welcome">Welcome!</string>
+    <string name="arrived">Looks like you\'ve arrived at Orinda 1. Please Check-In below to get your carpool assignment.</string>
 </resources>

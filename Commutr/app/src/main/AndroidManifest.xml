@@ -51,7 +51,11 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
+        <receiver android:name=".receivers.CheckInGeofenceReceiver" >
+            <intent-filter>
+                <action android:name="check_in_geofence_event" />
+            </intent-filter>
+        </receiver>
         <activity
             android:name=".base.BaseActivity"
             android:label="@string/title_activity_base" >

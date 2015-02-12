@@ -26,6 +26,7 @@ import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.CardView;
@@ -75,6 +76,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     private LocationServices locationService;
     private PendingIntent geofenceRequestIntent;
     private GoogleApiClient apiClient;
+    private CheckInFragment checkInDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,8 +89,14 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         setNextAvailableDate();
         handleButtonEvents();
         selectedPickupDateTime = nextAvailableCalendar;
+        registerReceivers();
+    }
+
+    private void registerReceivers() {
         IntentFilter comuteRequestFilter = new IntentFilter(CommutrApp.REQUEST_CONFIRMATION_EVENT);
         registerReceiver(requestReceiver, comuteRequestFilter);
+        IntentFilter checkInFilter = new IntentFilter(CommutrApp.CHECK_IN_EVENT);
+        registerReceiver(checkInReceiver, checkInFilter);
     }
 
     private void checkAndHandlePlayServices() {
@@ -267,6 +275,8 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                     enableFormElements();
                                     getDataManager().cacheCommute(null, getApplicationContext());
                                     getDataManager().cacheCommuteKey(null, getApplicationContext());
+                                    getDataManager().cacheCommuteRequestStatus(null, getApplicationContext());
+                                    getDataManager().cacheCheckInStatus(null, getApplicationContext());
                                     setNextAvailableDate();
                                     selectedPickupDateTime = nextAvailableCalendar;
                                     Alarms.unRegisterLocationAlarms(getApplicationContext());
@@ -308,14 +318,25 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                             (getApplicationContext(),
                                                     getResources().getString(R.string.commute_error_message));
                                 } else {
-                                    handleCommuteRequestResponse(result, commute);
-                                    getDataManager().cacheCommute(commute,getApplicationContext());
-                                    DisplayMessenger.showBasicToast
-                                            (getApplicationContext(),
-                                                    getResources().getString(R.string.commute_confirmed_message));
-                                    showFloatingUI();
-                                    handleReservationStateDisplay(getResources().getString(R.string.requested));
-                                    registerLocationAlarms();
+                                    getDataManager().cacheCommute(commute, getApplicationContext());
+                                    if(checkInDialog != null && checkInDialog.isShown()){
+                                        checkInDialog.dismiss();
+                                        checkInDialog = null;
+                                        getDataManager().cacheCheckInStatus(null,getApplicationContext());
+                                        DisplayMessenger.showBasicToast
+                                                (getApplicationContext(),
+                                                        getResources().getString(R.string.commute_check_in_message));
+                                    } else {
+                                        DisplayMessenger.showBasicToast
+                                                (getApplicationContext(),
+                                                        getResources().getString(R.string.commute_confirmed_message));
+                                        showFloatingUI();
+                                        handleReservationStateDisplay(getResources().getString(R.string.requested));
+                                        getDataManager().cacheCommuteRequestStatus(CommutrApp.REQUEST_REQUESTED,getApplicationContext());
+                                        registerLocationAlarms();
+                                        handleCommuteRequestResponse(result, commute);
+                                    }
+
                                 }
                             }
                         },
@@ -644,7 +665,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         }
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -664,6 +684,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         {
             populateUIWithCommute(currentCommute);
             String state = getDataManager().getCachedCommuteRequestStatus(getApplicationContext());
+            Logger.warn("handle","me "+state);
             if(state != null) {
                 int id = getResources().getIdentifier(state, "string", "android.commutr.com.commutr");
                 handleReservationStateDisplay(getResources().getString(id));
@@ -671,6 +692,8 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         } else {
             getDataManager().cacheCommute(null, getApplicationContext());
             getDataManager().cacheCommuteKey(null, getApplicationContext());
+            getDataManager().cacheCommuteRequestStatus(null,getApplicationContext());
+            getDataManager().cacheCheckInStatus(null,getApplicationContext());
             setNextAvailableDate();
             selectedPickupDateTime = nextAvailableCalendar;
             if(!viewIsInEditMode) {
@@ -678,7 +701,9 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                 hideFloatingUI();
             }
         }
-
+        if(getDataManager().getCachedCheckInStatus(getApplicationContext()) != null) {
+            showCheckinDialog();
+        }
     }
 
     private void populateUIWithCommute(Commute commute) {
@@ -728,6 +753,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         mixpanel.flush();
         try {
             unregisterReceiver(requestReceiver);
+            unregisterReceiver(checkInReceiver);
         } catch(IllegalArgumentException e) {
             Logger.warn("Unregister receiver",e.getLocalizedMessage());
         }
@@ -750,6 +776,15 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         }
     };
 
+    protected final BroadcastReceiver checkInReceiver = new BroadcastReceiver(){
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(CommutrApp.CHECK_IN_EVENT)) {
+                showCheckinDialog();
+            }
+        }
+    };
+
     private void showRequestConfirmationNotification(String state) {
         final Intent notificationIntent = new Intent(getApplicationContext(), CommuteActivity.class);
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -768,5 +803,29 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                 .setAutoCancel(true).build();
         NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1, notification);
+    }
+
+    private void showCheckinDialog() {
+        try {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            checkInDialog = new CheckInFragment();
+            checkInDialog.show(fragmentManager, "check_in_dialog");
+        } catch (IllegalStateException e) {
+
+        }
+    }
+
+    public void checkIn(View v) {
+        Commute commute = getDataManager().getCachedCommute(getApplicationContext());
+        commute.setPickupCheckinTime(System.currentTimeMillis() / 1000L);
+        saveCommute(commute);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(checkInDialog != null) {
+            checkInDialog.dismiss();
+        }
     }
 }

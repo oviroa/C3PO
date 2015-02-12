@@ -11,5 +11,6 @@
     <!-- data dod not load - message -->
     <string name="web_view_timeout_message">Traffic jam! Please pull and release to try again!</string>
     <string name="no_internet_message">Traffic jam! Internet access on your device may not be enabled!</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

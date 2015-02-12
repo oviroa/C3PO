@@ -101,6 +101,10 @@ public class Alarms {
                 calendarStart.set(Calendar.MINUTE,0);
                 calendarStart.set(Calendar.SECOND,0);
                 registerStartAlarm(appContext, calendarStart);
+//                calendarStart.set(Calendar.HOUR_OF_DAY,3);
+//                calendarStart.set(Calendar.MINUTE,30);
+//                calendarStart.set(Calendar.SECOND,0);
+//                registerStartAlarm(appContext, calendarStart);
             }
         } else {
             calendarStart = commuteCalendar;
@@ -108,6 +112,11 @@ public class Alarms {
             calendarStart.set(Calendar.MINUTE,0);
             calendarStart.set(Calendar.SECOND,0);
             registerStartAlarm(appContext, calendarStart);
+//            Logger.warn("REGISTER","CALENDAR START");
+//            calendarStart.set(Calendar.HOUR_OF_DAY,16);
+//            calendarStart.set(Calendar.MINUTE,26);
+//            calendarStart.set(Calendar.SECOND,0);
+//            registerStartAlarm(appContext, calendarStart);
         }
 
     }
@@ -117,6 +126,11 @@ public class Alarms {
         commuteCalendar.set(Calendar.MINUTE,0);
         commuteCalendar.set(Calendar.SECOND,0);
         registerEndAlarm(appContext, commuteCalendar);
+//        Calendar calendarEnd = Calendar.getInstance();
+//        calendarEnd.set(Calendar.HOUR_OF_DAY,16);
+//        calendarEnd.set(Calendar.MINUTE,28);
+//        calendarEnd.set(Calendar.SECOND,0);
+//        registerEndAlarm(appContext, calendarEnd);
     }
 
     private static void unregisterLocationTrackingStart(Context appContext) {
@@ -151,7 +165,7 @@ public class Alarms {
 
     public static void registerCommuteConfirmationRequest(Context appContext) {
         Calendar calendar = Calendar.getInstance();
-        int delay = appContext.getResources().getInteger(R.integer.commute_confirmation_delay)*1000*60;
+        int delay = appContext.getResources().getInteger(R.integer.commute_confirmation_delay)*1000;
         Intent commuteConfirmationIntent = new Intent(appContext, CommuteConfirmationRequestService.class);
         ((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).set
                 (

@@ -20,17 +20,20 @@ public class CommutrApp extends Application {
     public static final String LOCATION_END_EVENT = "location_end_event";
     public static final String ACTION_TYPE = "action_type";
     public static final String CONNECT = "connect";
+    public static final String REQUEST_REQUESTED = "requested";
     public static final String REQUEST_CONFIRMED = "confirmed";
     public static final String REQUEST_WAITLISTED = "waitlisted";
     public static final String REQUEST_CANCELLED = "cancelled";
     public static final String REQUEST_CONFIRMATION_EVENT = "request_confirmation_event";
     public static final String REQUEST_CONFIRMATION_STATE = "request_confirmation_state";
+    public static final String CHECK_IN_EVENT = "check_in_event";
     public static final String DISCONNECT = "disconnect";
     public static String activityType = "N/A";
     private GoogleApiClient googleApiClient;
     private  GoogleApiClient activityRecognitionClient;
     private String commuteKey;
     private String requestState;
+    private String checkInState;
 
     @Override
     public void onCreate() {
@@ -39,6 +42,15 @@ public class CommutrApp extends Application {
                 MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
         mixpanel.getPeople().identify(mixpanel.getDistinctId());
         mixpanel.track(getResources().getString(R.string.application_started), null);
+    }
+
+    public void setCheckInState(String checkInState) {
+        this.checkInState = checkInState;
+    }
+
+    public String getCheckInState() {
+
+        return checkInState;
     }
 
     public void setRequestState(String requestState) {

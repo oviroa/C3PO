@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/activity_vertical_margin">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/commute_check_in"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+
+    <android.commutr.com.commutr.base.CommutrTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/top_bar_background"
+        android:textStyle="bold"
+        android:text = "@string/welcome"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_gravity="center"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+
+    <android.commutr.com.commutr.base.CommutrTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_gravity="center"
+        android:text="@string/arrived"
+        android:layout_margin="@dimen/activity_vertical_margin"/>
+
+    <android.commutr.com.commutr.base.CommutrButton
+        android:id="@+id/commute_check_in_button"
+        android:layout_width="match_parent"
+        android:onClick="checkIn"
+        android:layout_height="wrap_content"
+        android:text="@string/check_in"
+        android:textColor="@color/neutral_background"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:textStyle="bold"
+        style="@style/ButtonAppTheme"/>
+
+</LinearLayout>
