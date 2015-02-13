@@ -43,7 +43,6 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
-
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
@@ -56,11 +55,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -926,8 +923,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         return -1;
     }
 
-    private void setTransportModeToDropoff(int transportModeToDropOff)
-    {
+    private void setTransportModeToDropoff(int transportModeToDropOff) {
         Spinner gettingToDropOffSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
         if(transportModeToDropOff == getResources().getInteger(R.integer.driver)) {
             gettingToDropOffSpinner.setSelection(0,true);
