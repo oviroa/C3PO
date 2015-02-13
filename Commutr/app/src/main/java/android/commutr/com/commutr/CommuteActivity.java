@@ -10,7 +10,6 @@ import android.commutr.com.commutr.base.BaseActivity;
 import android.commutr.com.commutr.base.CommutrTextView;
 import android.commutr.com.commutr.model.Commute;
 import android.commutr.com.commutr.model.TurboCommute;
-import android.commutr.com.commutr.services.GeofenceService;
 import android.commutr.com.commutr.utils.Alarms;
 import android.commutr.com.commutr.utils.ClientUtility;
 import android.commutr.com.commutr.utils.DisplayMessenger;
@@ -78,6 +77,12 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     private GoogleApiClient apiClient;
     private CheckInFragment checkInDialog;
 
+    /**
+     ********************************************************************
+     * Activity lifecycle functions
+     * ******************************************************************
+     */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,132 +91,98 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         checkAndHandlePlayServices();
         handleProgressBar();
         setSpinners();
-        setNextAvailableDate();
+        calculateNextAvailableDate();
+        displayAdjustedTime();
         handleButtonEvents();
         selectedPickupDateTime = nextAvailableCalendar;
         registerReceivers();
     }
 
-    private void registerReceivers() {
-        IntentFilter comuteRequestFilter = new IntentFilter(CommutrApp.REQUEST_CONFIRMATION_EVENT);
-        registerReceiver(requestReceiver, comuteRequestFilter);
-        IntentFilter checkInFilter = new IntentFilter(CommutrApp.CHECK_IN_EVENT);
-        registerReceiver(checkInReceiver, checkInFilter);
-    }
-
-    private void checkAndHandlePlayServices() {
-        if(!ClientUtility.isGooglePlayServicesAvailable(getApplicationContext())) {
-            MixpanelAPI mixpanel =
-                    MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
-            mixpanel.getPeople().identify(mixpanel.getDistinctId());
-            mixpanel.track(getResources().getString(R.string.no_play_services), null);
-            DisplayMessenger.showBasicToast(getApplicationContext(),getResources().getString(R.string.google_play_services_error));
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(getResources().getString(R.string.play_services_link)));
-            startActivity(intent);
-        }
-    }
-
-    private void registerLocationAlarms() {
-        Commute commute = getDataManager().getCachedCommute(getApplicationContext());
-        if(commute != null) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(commute.getScheduledPickupArrivalTime() * 1000);
-            Alarms.registerLocationAlarms(getApplicationContext(), calendar);
-        }
-    }
-
-
-    public void onItemSelected(AdapterView<?> parent, View view,
-                               int pos, long id) {
-        Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
-        Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
-        switch(parent.getId()) {
-            case R.id.commuter_type_spinner:
-                if(commuterTypeSpinner.getSelectedItem().equals(getResources().getString(R.string.driver))) {
-                    gettingToPickupSpinner.setSelection
-                            (((ArrayAdapter<String>)gettingToPickupSpinner.getAdapter()).getPosition(getResources().getString(R.string.car)),
-                                    true);
-                }
-                break;
-            case R.id.getting_to_pickup_spinner:
-                if(gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.bike))
-                        || gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.walking))) {
-                    commuterTypeSpinner.setSelection(((ArrayAdapter<String>)commuterTypeSpinner.getAdapter()).getPosition(getResources().getString(R.string.rider)),
-                            true);
-                }
-                break;
-        }
-    }
-
-    public void onNothingSelected(AdapterView<?> parent) {
-        // Another interface callback
-    }
-
-    private void loadMixpanelSuperData() {
-        MixpanelAPI mixpanel =
-                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
-        mixpanel.getPeople().identify(mixpanel.getDistinctId());
-        mixpanel.getPeople().set(getResources().getString(R.string.user_email),
-                getDataManager().retrieveUserEmail(getApplicationContext()));
-        Crashlytics.setUserIdentifier(mixpanel.getDistinctId());
-    }
-
-    private void handleButtonEvents() {
-        Button confirmCommuteButton = (Button) findViewById(R.id.confirm_commute_button);
-        confirmCommuteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                confirmCommute();
-            }
-        });
-        ImageButton editCommuteButton = (ImageButton) findViewById(R.id.edit_commute);
-        editCommuteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                editCommute();
-            }
-        });
-    }
-
-    private void handleProgressBar() {
-        swipeView = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
-        final TypedArray styledAttributes = getTheme().obtainStyledAttributes(
-                new int[] { android.R.attr.actionBarSize });
-        int actionBarSize = (int) styledAttributes.getDimension(0, 0);
-        styledAttributes.recycle();
-        swipeView.setProgressViewOffset(true, actionBarSize, actionBarSize + getResources().getInteger(R.integer.pull_refresh_offset));
-        swipeView.setEnabled(false);
-    }
-
-    private void cancelCommute() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        screenOrientation = getRequestedOrientation();
         Commute currentCommute = getDataManager().getCachedCommute(getApplicationContext());
-        currentCommute.setConfirmTime(0L);
-        currentCommute.setCancelTime(System.currentTimeMillis() / 1000L);
-        if(currentCommute != null) {
-            if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
-                disableConfirmationButton();
-                registerCancelledCommute(currentCommute);
-                MixpanelAPI mixpanel =
-                        MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
-                mixpanel.getPeople().identify(mixpanel.getDistinctId());
-                mixpanel.track(getResources().getString(R.string.commute_cancelled), null);
-            } else {
-                DisplayMessenger.showBasicToast
-                        (getApplicationContext(),
-                                getResources().getString(R.string.no_internet_message));
+        Long currentTimeInMilliseconds = System.currentTimeMillis();
+        SimpleDateFormat sdf = new SimpleDateFormat("h:mm a");
+        if(
+                currentCommute != null
+                        &&
+                        (
+                                ( currentTimeInMilliseconds < (currentCommute.getScheduledPickupArrivalTime()*1000 +
+                                        getResources().getInteger(R.integer.arrival_offset)))
+                                        ||
+                                        ( sdf.format(currentTimeInMilliseconds).equals(sdf.format(currentCommute.getScheduledPickupArrivalTime()*1000)))
+                        )
+                )
+        {
+            populateUIWithCommute(currentCommute);
+            String state = getDataManager().getCachedCommuteRequestStatus(getApplicationContext());
+            Logger.warn("handle", "me " + state);
+            if(state != null) {
+                int id = getResources().getIdentifier(state, "string", "android.commutr.com.commutr");
+                handleReservationStateDisplay(getResources().getString(id));
             }
+        } else {
+            clearCache();
+            calculateNextAvailableDate();
+            displayAdjustedTime();
+            selectedPickupDateTime = nextAvailableCalendar;
+            if(!viewIsInEditMode) {
+                enableFormElements();
+                hideFloatingUI();
+            }
+        }
+        if(getDataManager().getCachedCheckInStatus(getApplicationContext()) != null) {
+            showCheckinDialog();
         }
     }
 
-    private void editCommute() {
-        hideFloatingUI();
-        enableFormElements();
+    @Override
+    protected void onRestart() {
+        super.onRestart();
         MixpanelAPI mixpanel =
                 MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
         mixpanel.getPeople().identify(mixpanel.getDistinctId());
-        mixpanel.track(getResources().getString(R.string.commute_edited), null);
+        mixpanel.track(getResources().getString(R.string.application_started), null);
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
+        mixpanel.track(getResources().getString(R.string.application_stopped), null);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.flush();
+        try {
+            unregisterReceiver(requestReceiver);
+            unregisterReceiver(checkInReceiver);
+        } catch(IllegalArgumentException e) {
+            Logger.warn("Unregister receiver",e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(checkInDialog != null) {
+            checkInDialog.dismiss();
+        }
+    }
+
+    /**
+     ********************************************************************
+     * Data management functions
+     * ******************************************************************
+     */
 
     private void confirmCommute() {
         if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
@@ -227,73 +198,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                     (getApplicationContext(),
                             getResources().getString(R.string.no_internet_message));
         }
-    }
-
-    private void showFloatingUI() {
-        ImageButton editCommuteButton = (ImageButton) findViewById(R.id.edit_commute);
-        editCommuteButton.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in));
-        editCommuteButton.setVisibility(View.VISIBLE);
-        showCancelButton();
-    }
-
-
-    private void hideFloatingUI() {
-        //hide floating button for edit
-        ImageButton editCommuteButton = (ImageButton) findViewById(R.id.edit_commute);
-        editCommuteButton.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out));
-        editCommuteButton.setVisibility(View.GONE);
-        showConfirmButton();
-    }
-
-
-    private void registerCancelledCommute(final Commute commute){
-        if(commuteVolley == null) {
-            commuteVolley = Volley.newRequestQueue(getApplicationContext());
-        }
-        swipeView.setRefreshing(true);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
-        getDataManager().storeCommute
-                (
-                        commute,
-                        getApplicationContext(),
-                        commuteVolley,
-                        TAG,
-                        new Listener<JSONObject>() {
-                            public void onResponse(JSONObject result) {
-                                setRequestedOrientation(screenOrientation);
-                                swipeView.setRefreshing(false);
-                                if(result.has("error")) {
-                                    showCancelButton();
-                                    DisplayMessenger.showBasicToast
-                                            (getApplicationContext(),
-                                                    getResources().getString(R.string.commute_error_message));
-                                } else {
-                                    DisplayMessenger.showBasicToast
-                                            (getApplicationContext(),
-                                                    getResources().getString(R.string.commute_cancelled_message));
-                                    hideFloatingUI();
-                                    enableFormElements();
-                                    getDataManager().cacheCommute(null, getApplicationContext());
-                                    getDataManager().cacheCommuteKey(null, getApplicationContext());
-                                    getDataManager().cacheCommuteRequestStatus(null, getApplicationContext());
-                                    getDataManager().cacheCheckInStatus(null, getApplicationContext());
-                                    setNextAvailableDate();
-                                    selectedPickupDateTime = nextAvailableCalendar;
-                                    Alarms.unRegisterLocationAlarms(getApplicationContext());
-                                }
-                            }
-                        },
-                        new ErrorListener() {
-                            public void onErrorResponse(VolleyError error) {
-                                setRequestedOrientation(screenOrientation);
-                                showCancelButton();
-                                swipeView.setRefreshing(false);
-                                DisplayMessenger.showBasicToast
-                                        (getApplicationContext(),
-                                                getResources().getString(R.string.commute_error_message));
-                            }
-                        }
-                );
     }
 
     private void saveCommute(final Commute commute) {
@@ -353,16 +257,72 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                 );
     }
 
-    private void handleReservationStateDisplay(String message) {
-        CardView statusCardView = (CardView) findViewById(R.id.status_card_view);
-        CommutrTextView statusTextView = (CommutrTextView) findViewById(R.id.status_text_view);
-        statusTextView.setText(message);
-        if(statusCardView.getVisibility() == View.GONE) {
-            statusCardView.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.abc_slide_in_top));
-            statusCardView.setVisibility(View.VISIBLE);
-        } else {
-            statusCardView.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.abc_fade_in));
+    private void cancelCommute() {
+        Commute currentCommute = getDataManager().getCachedCommute(getApplicationContext());
+        currentCommute.setConfirmTime(0L);
+        currentCommute.setCancelTime(System.currentTimeMillis() / 1000L);
+        if(currentCommute != null) {
+            if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
+                disableConfirmationButton();
+                registerCancelledCommute(currentCommute);
+                MixpanelAPI mixpanel =
+                        MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+                mixpanel.getPeople().identify(mixpanel.getDistinctId());
+                mixpanel.track(getResources().getString(R.string.commute_cancelled), null);
+            } else {
+                DisplayMessenger.showBasicToast
+                        (getApplicationContext(),
+                                getResources().getString(R.string.no_internet_message));
+            }
         }
+    }
+
+    private void registerCancelledCommute(final Commute commute){
+        if(commuteVolley == null) {
+            commuteVolley = Volley.newRequestQueue(getApplicationContext());
+        }
+        swipeView.setRefreshing(true);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
+        getDataManager().storeCommute
+                (
+                        commute,
+                        getApplicationContext(),
+                        commuteVolley,
+                        TAG,
+                        new Listener<JSONObject>() {
+                            public void onResponse(JSONObject result) {
+                                setRequestedOrientation(screenOrientation);
+                                swipeView.setRefreshing(false);
+                                if(result.has("error")) {
+                                    showCancelButton();
+                                    DisplayMessenger.showBasicToast
+                                            (getApplicationContext(),
+                                                    getResources().getString(R.string.commute_error_message));
+                                } else {
+                                    DisplayMessenger.showBasicToast
+                                            (getApplicationContext(),
+                                                    getResources().getString(R.string.commute_cancelled_message));
+                                    hideFloatingUI();
+                                    enableFormElements();
+                                    clearCache();
+                                    calculateNextAvailableDate();
+                                    displayAdjustedTime();
+                                    selectedPickupDateTime = nextAvailableCalendar;
+                                    Alarms.unRegisterLocationAlarms(getApplicationContext());
+                                }
+                            }
+                        },
+                        new ErrorListener() {
+                            public void onErrorResponse(VolleyError error) {
+                                setRequestedOrientation(screenOrientation);
+                                showCancelButton();
+                                swipeView.setRefreshing(false);
+                                DisplayMessenger.showBasicToast
+                                        (getApplicationContext(),
+                                                getResources().getString(R.string.commute_error_message));
+                            }
+                        }
+                );
     }
 
     private void handleCommuteRequestResponse(JSONObject result, Commute commute) {
@@ -385,7 +345,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         }
     }
 
-    private Commute buildCommute(){
+    private Commute buildCommute() {
         Commute myCommute = new Commute();
         myCommute.setEmail(getDataManager().retrieveUserEmail(getApplicationContext()));
         myCommute.setDeviceIdentifier(Installation.id(getApplicationContext()));
@@ -399,71 +359,286 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         return myCommute;
     }
 
-    private int getTransportModeToPickup() {
-        Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
-        if(gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.walking))) {
-            return getResources().getInteger(R.integer.walking);
-        }
-        else if (gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.bike))) {
-            return getResources().getInteger(R.integer.bike);
-        }
-        else if (gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.car))) {
-            return getResources().getInteger(R.integer.car);
-        }
-        return -1;
+    private void clearCache() {
+        getDataManager().cacheCommute(null, getApplicationContext());
+        getDataManager().cacheCommuteKey(null, getApplicationContext());
+        getDataManager().cacheCommuteRequestStatus(null, getApplicationContext());
+        getDataManager().cacheCheckInStatus(null, getApplicationContext());
     }
 
-    private void setTransportModeToPickupSpinner(int transportModeToPickup)
-    {
-        Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
-        if(transportModeToPickup == getResources().getInteger(R.integer.walking)) {
-            gettingToPickupSpinner.setSelection(0, true);
-        }
-        else if (transportModeToPickup == getResources().getInteger(R.integer.bike)) {
-            gettingToPickupSpinner.setSelection(1, true);
-        }
-        else if (transportModeToPickup == getResources().getInteger(R.integer.car))  {
-            gettingToPickupSpinner.setSelection(2, true);
-        }
+    /**
+     ********************************************************************
+     * Event handling functions
+     * ******************************************************************
+     */
+
+    private void registerReceivers() {
+        IntentFilter comuteRequestFilter = new IntentFilter(CommutrApp.REQUEST_CONFIRMATION_EVENT);
+        registerReceiver(requestReceiver, comuteRequestFilter);
+        IntentFilter checkInFilter = new IntentFilter(CommutrApp.CHECK_IN_EVENT);
+        registerReceiver(checkInReceiver, checkInFilter);
     }
 
-    private void setTransportModeToDropoff(int transportModeToDropOff)
-    {
-        Spinner gettingToDropOffSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
-        if(transportModeToDropOff == getResources().getInteger(R.integer.driver)) {
-            gettingToDropOffSpinner.setSelection(0,true);
-        }
-        else if (transportModeToDropOff == getResources().getInteger(R.integer.rider)) {
-            gettingToDropOffSpinner.setSelection(1,true);
+    private void registerLocationAlarms() {
+        Commute commute = getDataManager().getCachedCommute(getApplicationContext());
+        if(commute != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(commute.getScheduledPickupArrivalTime() * 1000);
+            Alarms.registerLocationAlarms(getApplicationContext(), calendar);
         }
     }
 
-    private int getTransportModeToDropoff() {
-        Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
-        if(commuterTypeSpinner.getSelectedItem().equals(getResources().getString(R.string.driver))) {
-            return getResources().getInteger(R.integer.driver);
+    protected final BroadcastReceiver requestReceiver = new BroadcastReceiver(){
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(CommutrApp.REQUEST_CONFIRMATION_EVENT)) {
+                String state = intent.getStringExtra(CommutrApp.REQUEST_CONFIRMATION_STATE);
+                int id = getResources().getIdentifier(state, "string", "android.commutr.com.commutr");
+                handleReservationStateDisplay(getResources().getString(id));
+                showRequestConfirmationNotification(getResources().getString(id));
+            }
         }
-        else if (commuterTypeSpinner.getSelectedItem().equals(getResources().getString(R.string.rider))) {
-            return getResources().getInteger(R.integer.rider);
+    };
+
+    protected final BroadcastReceiver checkInReceiver = new BroadcastReceiver(){
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(CommutrApp.CHECK_IN_EVENT)) {
+                showCheckinDialog();
+            }
         }
-        return -1;
+    };
+
+
+    /**
+     ********************************************************************
+     * Device/app state functions
+     * ******************************************************************
+     */
+
+    private void checkAndHandlePlayServices() {
+        if(!ClientUtility.isGooglePlayServicesAvailable(getApplicationContext())) {
+            MixpanelAPI mixpanel =
+                    MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+            mixpanel.getPeople().identify(mixpanel.getDistinctId());
+            mixpanel.track(getResources().getString(R.string.no_play_services), null);
+            DisplayMessenger.showBasicToast(getApplicationContext(),getResources().getString(R.string.google_play_services_error));
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(getResources().getString(R.string.play_services_link)));
+            startActivity(intent);
+        }
     }
+
+    private void showRequestConfirmationNotification(String state) {
+        final Intent notificationIntent = new Intent(getApplicationContext(), CommuteActivity.class);
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        Notification notification = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(new StringBuilder().
+                        append(getResources().getString(R.string.request_response_notification_title)).
+                        append(" ").
+                        append(state.toLowerCase()).toString())
+                .setColor(getResources().getColor(R.color.top_bar_background))
+                .setDefaults(Notification.DEFAULT_VIBRATE)
+                .setSound(Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
+                        + getApplicationContext().getPackageName() + "/raw/whisper"))
+                .setContentText(getResources().getString(R.string.request_response_notification))
+                .setContentIntent(PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT))
+                .setAutoCancel(true).build();
+        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(1, notification);
+    }
+
+    /**
+     ********************************************************************
+     * Time/Date functions
+     * ******************************************************************
+     */
 
     private long getScheduledPickupArrivalTime() {
         return selectedPickupDateTime.getTimeInMillis()/1000L;
     }
 
+    private void calculateNextAvailableDate(){
+        nextAvailableCalendar = Calendar.getInstance();
+        int hour = nextAvailableCalendar.get(Calendar.HOUR_OF_DAY);
+        int day = nextAvailableCalendar.get(Calendar.DAY_OF_WEEK);
+        if(day == Calendar.SATURDAY){
+            nextAvailableCalendar.add(Calendar.DATE, 2);
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
+            nextAvailableCalendar.set(Calendar.MINUTE,0);
+        } else if(day == Calendar.SUNDAY) {
+            nextAvailableCalendar.add(Calendar.DATE, 1);
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
+            nextAvailableCalendar.set(Calendar.MINUTE,0);
+        } //Friday
+        else if(hour >= getResources().getInteger(R.integer.latest_commute_set_time)){
+            if(day == Calendar.FRIDAY){
+                nextAvailableCalendar.add(Calendar.DATE, 3);
+                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
+                nextAvailableCalendar.set(Calendar.MINUTE,0);
+            } else {
+                nextAvailableCalendar.add(Calendar.DATE, 1);
+                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
+                nextAvailableCalendar.set(Calendar.MINUTE,0);
+            }
+        } else {
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY, getResources().getInteger(R.integer.earliest_commute_set_time));
+            nextAvailableCalendar.set(Calendar.MINUTE, 0);
+        }
+    }
+
+    public void checkIn(View v) {
+        Commute commute = getDataManager().getCachedCommute(getApplicationContext());
+        commute.setPickupCheckinTime(System.currentTimeMillis() / 1000L);
+        saveCommute(commute);
+    }
+
+    /**
+     ********************************************************************
+     * Analytics functions
+     * ******************************************************************
+     */
+
+    private void loadMixpanelSuperData() {
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
+        mixpanel.getPeople().set(getResources().getString(R.string.user_email),
+                getDataManager().retrieveUserEmail(getApplicationContext()));
+        Crashlytics.setUserIdentifier(mixpanel.getDistinctId());
+    }
+
+    /**
+     ********************************************************************
+     * UI handling functions
+     * ******************************************************************
+     */
+
+    private void displayAdjustedTime() {
+        TextView commuteDateValue = (TextView) findViewById(R.id.commute_date_value);
+        TextView selectedCommuteDate = (TextView) findViewById(R.id.select_commute_date_value);
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM dd ");
+        String currentDate = sdf.format(nextAvailableCalendar.getTime());
+        commuteDateValue.setText(currentDate);
+        selectedCommuteDate.setText(currentDate);
+        TextView selectetArrivalTime = (TextView) findViewById(R.id.pickup_arrival_value);
+        sdf = new SimpleDateFormat("h:mm a");
+        String selectedTime = sdf.format(nextAvailableCalendar.getTimeInMillis());
+        selectetArrivalTime.setText(selectedTime);
+    }
+
+    public void onItemSelected(AdapterView<?> parent, View view,
+                               int pos, long id) {
+        Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
+        Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
+        switch(parent.getId()) {
+            case R.id.commuter_type_spinner:
+                if(commuterTypeSpinner.getSelectedItem().equals(getResources().getString(R.string.driver))) {
+                    gettingToPickupSpinner.setSelection
+                            (((ArrayAdapter<String>)gettingToPickupSpinner.getAdapter()).getPosition(getResources().getString(R.string.car)),
+                                    true);
+                }
+                break;
+            case R.id.getting_to_pickup_spinner:
+                if(gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.bike))
+                        || gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.walking))) {
+                    commuterTypeSpinner.setSelection(((ArrayAdapter<String>)commuterTypeSpinner.getAdapter()).getPosition(getResources().getString(R.string.rider)),
+                            true);
+                }
+                break;
+        }
+    }
+
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Another interface callback
+    }
+
+    private void handleButtonEvents() {
+        Button confirmCommuteButton = (Button) findViewById(R.id.confirm_commute_button);
+        confirmCommuteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                confirmCommute();
+            }
+        });
+        ImageButton editCommuteButton = (ImageButton) findViewById(R.id.edit_commute);
+        editCommuteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                editCommute();
+            }
+        });
+    }
+
+    private void handleProgressBar() {
+        swipeView = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        final TypedArray styledAttributes = getTheme().obtainStyledAttributes(
+                new int[] { android.R.attr.actionBarSize });
+        int actionBarSize = (int) styledAttributes.getDimension(0, 0);
+        styledAttributes.recycle();
+        swipeView.setProgressViewOffset(true, actionBarSize, actionBarSize + getResources().getInteger(R.integer.pull_refresh_offset));
+        swipeView.setEnabled(false);
+    }
+
+    private void editCommute() {
+        hideFloatingUI();
+        enableFormElements();
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
+        mixpanel.track(getResources().getString(R.string.commute_edited), null);
+    }
+
+    private void showFloatingUI() {
+        ImageButton editCommuteButton = (ImageButton) findViewById(R.id.edit_commute);
+        editCommuteButton.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in));
+        editCommuteButton.setVisibility(View.VISIBLE);
+        showCancelButton();
+    }
+
+    private void hideFloatingUI() {
+        //hide floating button for edit
+        ImageButton editCommuteButton = (ImageButton) findViewById(R.id.edit_commute);
+        editCommuteButton.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out));
+        editCommuteButton.setVisibility(View.GONE);
+        showConfirmButton();
+    }
+
+    private void handleReservationStateDisplay(String message) {
+        CardView statusCardView = (CardView) findViewById(R.id.status_card_view);
+        CommutrTextView statusTextView = (CommutrTextView) findViewById(R.id.status_text_view);
+        statusTextView.setText(message);
+        if(statusCardView.getVisibility() == View.GONE) {
+            statusCardView.setVisibility(View.VISIBLE);
+            statusCardView.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.abc_fade_in));
+        }
+
+    }
+
     private void disableFormElements()
     {
         viewIsInEditMode = false;
+        setFormElementsState(false);
+    }
+
+    private void enableFormElements()
+    {
+        viewIsInEditMode = true;
+        setFormElementsState(true);
+        showConfirmButton();
+        hideRequestStatus();
+    }
+
+    private void setFormElementsState(Boolean enabled) {
         Button pickupArrivalButton = (Button) findViewById(R.id.pickup_arrival_button);
-        pickupArrivalButton.setEnabled(false);
+        pickupArrivalButton.setEnabled(enabled);
         Button commuteDateButton = (Button) findViewById(R.id.commute_date_button);
-        commuteDateButton.setEnabled(false);
+        commuteDateButton.setEnabled(enabled);
         Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
-        commuterTypeSpinner.setEnabled(false);
+        commuterTypeSpinner.setEnabled(enabled);
         Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
-        gettingToPickupSpinner.setEnabled(false);
+        gettingToPickupSpinner.setEnabled(enabled);
     }
 
     private void disableConfirmationButton() {
@@ -471,6 +646,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         confirmCommuteButton.setEnabled(false);
         confirmCommuteButton.setAlpha(0.6f);
     }
+
 
     private void showConfirmButton() {
         Button confirmCommuteButton = (Button) findViewById(R.id.confirm_commute_button);
@@ -499,21 +675,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         });
     }
 
-    private void enableFormElements()
-    {
-        viewIsInEditMode = true;
-        Button pickupArrivalButton = (Button) findViewById(R.id.pickup_arrival_button);
-        pickupArrivalButton.setEnabled(true);
-        Button commuteDateButton = (Button) findViewById(R.id.commute_date_button);
-        commuteDateButton.setEnabled(true);
-        Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
-        commuterTypeSpinner.setEnabled(true);
-        Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
-        gettingToPickupSpinner.setEnabled(true);
-        showConfirmButton();
-        hideRequestStatus();
-    }
-
     private void hideRequestStatus() {
         CardView statusCardView = (CardView) findViewById(R.id.status_card_view);
         if(statusCardView.getVisibility() == View.VISIBLE) {
@@ -522,49 +683,10 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         }
     }
 
-    private void setNextAvailableDate(){
-        nextAvailableCalendar = Calendar.getInstance();
-        int hour = nextAvailableCalendar.get(Calendar.HOUR_OF_DAY);
-        int day = nextAvailableCalendar.get(Calendar.DAY_OF_WEEK);
-        if(day == Calendar.SATURDAY){
-            nextAvailableCalendar.add(Calendar.DATE, 2);
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
-            nextAvailableCalendar.set(Calendar.MINUTE,0);
-        } else if(day == Calendar.SUNDAY) {
-            nextAvailableCalendar.add(Calendar.DATE, 1);
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
-            nextAvailableCalendar.set(Calendar.MINUTE,0);
-        } //Friday
-        else if(hour >= getResources().getInteger(R.integer.latest_commute_set_time)){
-            if(day == Calendar.FRIDAY){
-                nextAvailableCalendar.add(Calendar.DATE, 3);
-                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
-                nextAvailableCalendar.set(Calendar.MINUTE,0);
-            } else {
-                nextAvailableCalendar.add(Calendar.DATE, 1);
-                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
-                nextAvailableCalendar.set(Calendar.MINUTE,0);
-            }
-        } else {
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY, getResources().getInteger(R.integer.earliest_commute_set_time));
-            nextAvailableCalendar.set(Calendar.MINUTE, 0);
-        }
-        TextView commuteDateValue = (TextView) findViewById(R.id.commute_date_value);
-        TextView selectedCommuteDate = (TextView) findViewById(R.id.select_commute_date_value);
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM dd ");
-        String currentDate = sdf.format(nextAvailableCalendar.getTime());
-        commuteDateValue.setText(currentDate);
-        selectedCommuteDate.setText(currentDate);
-        TextView selectetArrivalTime = (TextView) findViewById(R.id.pickup_arrival_value);
-        sdf = new SimpleDateFormat("h:mm a");
-        String selectedTime = sdf.format(nextAvailableCalendar.getTimeInMillis());
-        selectetArrivalTime.setText(selectedTime);
-    }
-
     private void setSpinners() {
         Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-        R.array.type_of_commuter_options, R.layout.spinner_item);
+                R.array.type_of_commuter_options, R.layout.spinner_item);
         setSingleSpinner(commuterTypeSpinner,adapter);
         commuterTypeSpinner.setOnItemSelectedListener(this);
         Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
@@ -590,7 +712,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         DialogFragment newFragment = new TimePickerFragment();
         newFragment.show(getSupportFragmentManager(), "timePicker");
     }
-
 
     public static class DatePickerFragment extends DialogFragment
             implements DatePickerDialog.OnDateSetListener {
@@ -630,6 +751,16 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         }
     }
 
+    private void showCheckinDialog() {
+        try {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            checkInDialog = new CheckInFragment();
+            checkInDialog.show(fragmentManager, "check_in_dialog");
+        } catch (IllegalStateException e) {
+
+        }
+    }
+
     public static class TimePickerFragment extends DialogFragment
             implements TimePickerDialog.OnTimeSetListener {
 
@@ -649,11 +780,11 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
             SimpleDateFormat sdf = new SimpleDateFormat("h:mm a");
             if(
                     hourOfDay < getActivity().getResources().getInteger(R.integer.earliest_commute_set_time)
-                    || hourOfDay >= getActivity().getResources().getInteger(R.integer.latest_commute_set_time)
-              )
+                            || hourOfDay >= getActivity().getResources().getInteger(R.integer.latest_commute_set_time)
+                    )
             {
                 DisplayMessenger.showBasicToast(getActivity().getApplicationContext(),
-                       getActivity().getResources().getString(R.string.time_out_of_bounds));
+                        getActivity().getResources().getString(R.string.time_out_of_bounds));
 
                 hourOfDay = getActivity().getResources().getInteger(R.integer.earliest_commute_set_time);
                 minute = 0;
@@ -662,47 +793,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
             selectedPickupDateTime.set(Calendar.MINUTE, minute);
             String selectedTime = sdf.format(selectedPickupDateTime.getTimeInMillis());
             selectetArrivalTime.setText(selectedTime);
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        screenOrientation = getRequestedOrientation();
-        Commute currentCommute = getDataManager().getCachedCommute(getApplicationContext());
-        Long currentTimeInMilliseconds = System.currentTimeMillis();
-        SimpleDateFormat sdf = new SimpleDateFormat("h:mm a");
-        if(
-            currentCommute != null
-            &&
-            (
-                ( currentTimeInMilliseconds < currentCommute.getScheduledPickupArrivalTime()*1000 )
-                ||
-                ( sdf.format(currentTimeInMilliseconds).equals(sdf.format(currentCommute.getScheduledPickupArrivalTime()*1000)))
-            )
-          )
-        {
-            populateUIWithCommute(currentCommute);
-            String state = getDataManager().getCachedCommuteRequestStatus(getApplicationContext());
-            Logger.warn("handle","me "+state);
-            if(state != null) {
-                int id = getResources().getIdentifier(state, "string", "android.commutr.com.commutr");
-                handleReservationStateDisplay(getResources().getString(id));
-            }
-        } else {
-            getDataManager().cacheCommute(null, getApplicationContext());
-            getDataManager().cacheCommuteKey(null, getApplicationContext());
-            getDataManager().cacheCommuteRequestStatus(null,getApplicationContext());
-            getDataManager().cacheCheckInStatus(null,getApplicationContext());
-            setNextAvailableDate();
-            selectedPickupDateTime = nextAvailableCalendar;
-            if(!viewIsInEditMode) {
-                enableFormElements();
-                hideFloatingUI();
-            }
-        }
-        if(getDataManager().getCachedCheckInStatus(getApplicationContext()) != null) {
-            showCheckinDialog();
         }
     }
 
@@ -727,105 +817,52 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         }
     }
 
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        MixpanelAPI mixpanel =
-                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
-        mixpanel.getPeople().identify(mixpanel.getDistinctId());
-        mixpanel.track(getResources().getString(R.string.application_started), null);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        MixpanelAPI mixpanel =
-                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
-        mixpanel.getPeople().identify(mixpanel.getDistinctId());
-        mixpanel.track(getResources().getString(R.string.application_stopped), null);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        MixpanelAPI mixpanel =
-                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
-        mixpanel.flush();
-        try {
-            unregisterReceiver(requestReceiver);
-            unregisterReceiver(checkInReceiver);
-        } catch(IllegalArgumentException e) {
-            Logger.warn("Unregister receiver",e.getLocalizedMessage());
+    private void setTransportModeToPickupSpinner(int transportModeToPickup) {
+        Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
+        if(transportModeToPickup == getResources().getInteger(R.integer.walking)) {
+            gettingToPickupSpinner.setSelection(0, true);
+        }
+        else if (transportModeToPickup == getResources().getInteger(R.integer.bike)) {
+            gettingToPickupSpinner.setSelection(1, true);
+        }
+        else if (transportModeToPickup == getResources().getInteger(R.integer.car))  {
+            gettingToPickupSpinner.setSelection(2, true);
         }
     }
 
-   private PendingIntent getGeofenceTransitionPendingIntent() {
-        Intent intent = new Intent(this, GeofenceService.class);
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    private int getTransportModeToPickup() {
+        Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
+        if(gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.walking))) {
+            return getResources().getInteger(R.integer.walking);
+        }
+        else if (gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.bike))) {
+            return getResources().getInteger(R.integer.bike);
+        }
+        else if (gettingToPickupSpinner.getSelectedItem().equals(getResources().getString(R.string.car))) {
+            return getResources().getInteger(R.integer.car);
+        }
+        return -1;
     }
 
-    protected final BroadcastReceiver requestReceiver = new BroadcastReceiver(){
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(CommutrApp.REQUEST_CONFIRMATION_EVENT)) {
-                String state = intent.getStringExtra(CommutrApp.REQUEST_CONFIRMATION_STATE);
-                int id = getResources().getIdentifier(state, "string", "android.commutr.com.commutr");
-                handleReservationStateDisplay(getResources().getString(id));
-                showRequestConfirmationNotification(getResources().getString(id));
-            }
+    private void setTransportModeToDropoff(int transportModeToDropOff)
+    {
+        Spinner gettingToDropOffSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
+        if(transportModeToDropOff == getResources().getInteger(R.integer.driver)) {
+            gettingToDropOffSpinner.setSelection(0,true);
         }
-    };
-
-    protected final BroadcastReceiver checkInReceiver = new BroadcastReceiver(){
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(CommutrApp.CHECK_IN_EVENT)) {
-                showCheckinDialog();
-            }
-        }
-    };
-
-    private void showRequestConfirmationNotification(String state) {
-        final Intent notificationIntent = new Intent(getApplicationContext(), CommuteActivity.class);
-        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        Notification notification = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(new StringBuilder().
-                        append(getResources().getString(R.string.request_response_notification_title)).
-                        append(" ").
-                        append(state.toLowerCase()).toString())
-                .setColor(getResources().getColor(R.color.top_bar_background))
-                .setDefaults(Notification.DEFAULT_VIBRATE)
-                .setSound(Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
-                        + getApplicationContext().getPackageName() + "/raw/whisper"))
-                .setContentText(getResources().getString(R.string.request_response_notification))
-                .setContentIntent(PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT))
-                .setAutoCancel(true).build();
-        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(1, notification);
-    }
-
-    private void showCheckinDialog() {
-        try {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            checkInDialog = new CheckInFragment();
-            checkInDialog.show(fragmentManager, "check_in_dialog");
-        } catch (IllegalStateException e) {
-
+        else if (transportModeToDropOff == getResources().getInteger(R.integer.rider)) {
+            gettingToDropOffSpinner.setSelection(1,true);
         }
     }
 
-    public void checkIn(View v) {
-        Commute commute = getDataManager().getCachedCommute(getApplicationContext());
-        commute.setPickupCheckinTime(System.currentTimeMillis() / 1000L);
-        saveCommute(commute);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if(checkInDialog != null) {
-            checkInDialog.dismiss();
+    private int getTransportModeToDropoff() {
+        Spinner commuterTypeSpinner = (Spinner) findViewById(R.id.commuter_type_spinner);
+        if(commuterTypeSpinner.getSelectedItem().equals(getResources().getString(R.string.driver))) {
+            return getResources().getInteger(R.integer.driver);
         }
+        else if (commuterTypeSpinner.getSelectedItem().equals(getResources().getString(R.string.rider))) {
+            return getResources().getInteger(R.integer.rider);
+        }
+        return -1;
     }
 }

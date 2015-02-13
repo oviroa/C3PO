@@ -54,7 +54,7 @@ public class LocationSubmissionService extends Service
         Logger.warn("CONN","ECTED");
         googleApiClient = ((CommutrApp)getApplicationContext()).getGoogleApiClient();
         locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(getApplicationContext().getResources().getInteger(R.integer.location_update_interval));
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 googleApiClient, locationRequest, this);
@@ -157,7 +157,7 @@ public class LocationSubmissionService extends Service
 
         geofence = new Geofence.Builder()
                 .setRequestId(Integer.toString(0))
-                .setNotificationResponsiveness(100)
+                .setNotificationResponsiveness(10000)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
                         Geofence.GEOFENCE_TRANSITION_EXIT)
                 .setCircularRegion
