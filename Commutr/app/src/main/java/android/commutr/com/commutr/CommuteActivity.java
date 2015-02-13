@@ -244,7 +244,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                         registerLocationAlarms();
                                         handleCommuteRequestResponse(result, commute);
                                     }
-
                                 }
                             }
                         },
