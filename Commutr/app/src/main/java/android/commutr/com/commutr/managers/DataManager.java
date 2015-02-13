@@ -29,8 +29,9 @@ public class DataManager {
     private static DataManager ref = null;
     private static String COMMUTE_URL = "https://just-armor-726.appspot.com/api/commute";
     private static String IDENTITY_URL = "https://just-armor-726.appspot.com/api/device";
-    private static String LOCATION_URL = "https://just-armor-726.appspot.com/api/point";
+    private static String LOCATION_POINT_URL = "https://just-armor-726.appspot.com/api/point";
     private static String COMMUTE_CONFIRMATION_URL = "https://just-armor-726.appspot.com/api/v2/commute/";
+    private static String LOCATIONS_URL = "https://just-armor-726.appspot.com/api/location";
 
     /**
      * Retrieves singleton instance
@@ -55,8 +56,6 @@ public class DataManager {
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
-
-
 
     public void storeUserEmail(String userEmail, Context context) {
         //store in memory
@@ -205,7 +204,7 @@ public class DataManager {
                     new JsonObjectRequest
                             (
                                     method,
-                                    LOCATION_URL,
+                                    LOCATION_POINT_URL,
                                     new JSONObject(gson.toJson(point,LocationPoint.class)),
                                     listener,
                                     errorListener
@@ -304,5 +303,25 @@ public class DataManager {
             state = settings.getString(context.getResources().getString(R.string.commutr_check_in_status), null);
         }
         return state;
+    }
+
+    public void retrieveLocations(Context context,
+                                  RequestQueue queue,
+                                  Object tag,
+                                  Listener<JSONObject> listener,
+                                  ErrorListener errorListener) {
+        int method = (Method.GET);
+        JsonObjectRequest jsonRequest =
+                new JsonObjectRequest
+                        (
+                                method,
+                                LOCATIONS_URL,
+                                null,
+                                listener,
+                                errorListener
+                        );
+        jsonRequest.setShouldCache(false);
+        jsonRequest.setTag(tag);
+        queue.add(jsonRequest);
     }
 }

@@ -1,10 +1,10 @@
 package android.commutr.com.commutr;
 
-import android.app.Application;
 import android.commutr.com.commutr.model.Commute;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
+import com.orm.SugarApp;
 
 /**
  * Created by oviroa on 1/23/15.
@@ -12,7 +12,7 @@ import com.mixpanel.android.mpmetrics.MixpanelAPI;
  * Used to store state and context of the application when running
  */
 
-public class CommutrApp extends Application {
+public class CommutrApp extends SugarApp {
 
     private String userEmail;
     private Commute currentCommute;

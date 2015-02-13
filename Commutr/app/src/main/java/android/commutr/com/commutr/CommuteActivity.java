@@ -9,6 +9,8 @@ import android.app.TimePickerDialog;
 import android.commutr.com.commutr.base.BaseActivity;
 import android.commutr.com.commutr.base.CommutrTextView;
 import android.commutr.com.commutr.model.Commute;
+import android.commutr.com.commutr.model.Location;
+import android.commutr.com.commutr.model.LocationHour;
 import android.commutr.com.commutr.model.TurboCommute;
 import android.commutr.com.commutr.utils.Alarms;
 import android.commutr.com.commutr.utils.ClientUtility;
@@ -55,6 +57,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -96,6 +99,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         handleButtonEvents();
         selectedPickupDateTime = nextAvailableCalendar;
         registerReceivers();
+        getLocations();
     }
 
     @Override
@@ -255,6 +259,85 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                             }
                         }
                 );
+    }
+
+    private void getLocations() {
+
+        if(commuteVolley == null) {
+            commuteVolley = Volley.newRequestQueue(getApplicationContext());
+        }
+        swipeView.setRefreshing(true);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
+        getDataManager().retrieveLocations
+                (
+                        getApplicationContext(),
+                        commuteVolley,
+                        TAG,
+                        new Listener<JSONObject>() {
+                            public void onResponse(JSONObject result) {
+                                setRequestedOrientation(screenOrientation);
+                                swipeView.setRefreshing(false);
+                                if (result.has("error")) {
+                                    enableFormElements();
+                                    DisplayMessenger.showBasicToast
+                                            (getApplicationContext(),
+                                                    getResources().getString(R.string.commute_error_message));
+                                } else {
+                                    persistLocations(result);
+                                    persistLocationHours(result);
+                                }
+                            }
+                        },
+                        new ErrorListener() {
+                            public void onErrorResponse(VolleyError error) {
+                                setRequestedOrientation(screenOrientation);
+                                swipeView.setRefreshing(false);
+                                DisplayMessenger.showBasicToast
+                                        (getApplicationContext(),
+                                                getResources().getString(R.string.commute_error_message));
+                                enableFormElements();
+                            }
+                        }
+                );
+    }
+
+    private void persistLocations(JSONObject result) {
+        try {
+            Location.deleteAll(Location.class);
+            JSONArray locations = result.getJSONArray("location");
+            for(int i=0;i<locations.length(); i++) {
+                JSONObject jsonLocation = locations.getJSONObject(i);
+                Gson gson = new Gson();
+                Location location = gson.fromJson(jsonLocation.toString(), Location.class);
+                location.save();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void persistLocationHours(JSONObject result) {
+        try {
+            LocationHour.deleteAll(LocationHour.class);
+            JSONArray locationHours = result.getJSONArray("location_hours");
+            for(int i=0;i<locationHours.length(); i++) {
+                JSONObject jsonLocationHour = locationHours.getJSONObject(i);
+                LocationHour locationHour = new LocationHour();
+                locationHour.setStartTime(jsonLocationHour.getLong("start_time"));
+                locationHour.setEndTime(jsonLocationHour.getLong("end_time"));
+                locationHour.setPickupLocation
+                (
+                    Location.find(Location.class,"code=?",jsonLocationHour.getString("pickup_location")).get(0)
+                );
+                locationHour.setDropoffLocation
+                (
+                     Location.find(Location.class,"code=?",jsonLocationHour.getString("dropoff_location")).get(0)
+                );
+                locationHour.save();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void cancelCommute() {
