@@ -43,6 +43,7 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
@@ -55,13 +56,16 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class CommuteActivity extends BaseActivity implements OnItemSelectedListener{
 
@@ -76,6 +80,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     private PendingIntent geofenceRequestIntent;
     private GoogleApiClient apiClient;
     private CheckInFragment checkInDialog;
+    private LocationsFragment locationsDialog;
 
     /**
      ********************************************************************
@@ -96,7 +101,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         handleButtonEvents();
         selectedPickupDateTime = nextAvailableCalendar;
         registerReceivers();
-        getLocations();
     }
 
     @Override
@@ -281,6 +285,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                 } else {
                                     persistLocations(result);
                                     persistLocationHours(result);
+                                    displayLocationsDialog();
                                 }
                             }
                         },
@@ -322,13 +327,13 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                 locationHour.setStartTime(jsonLocationHour.getLong("start_time"));
                 locationHour.setEndTime(jsonLocationHour.getLong("end_time"));
                 locationHour.setPickupLocation
-                (
-                    Location.find(Location.class,"code=?",jsonLocationHour.getString("pickup_location")).get(0)
-                );
+                        (
+                                Location.find(Location.class, "code=?", jsonLocationHour.getString("pickup_location")).get(0)
+                        );
                 locationHour.setDropoffLocation
-                (
-                     Location.find(Location.class,"code=?",jsonLocationHour.getString("dropoff_location")).get(0)
-                );
+                        (
+                                Location.find(Location.class, "code=?", jsonLocationHour.getString("dropoff_location")).get(0)
+                        );
                 locationHour.save();
             }
         } catch (JSONException e) {
@@ -594,6 +599,10 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
      * ******************************************************************
      */
 
+    public void handleSelectedRoute(long id) {
+        Logger.warn("OK DO", " id " + id);
+    }
+
     private void displayAdjustedTime() {
         TextView commuteDateValue = (TextView) findViewById(R.id.commute_date_value);
         TextView selectedCommuteDate = (TextView) findViewById(R.id.select_commute_date_value);
@@ -605,6 +614,25 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         sdf = new SimpleDateFormat("h:mm a");
         String selectedTime = sdf.format(nextAvailableCalendar.getTimeInMillis());
         selectetArrivalTime.setText(selectedTime);
+    }
+
+    public void showLocations(View v) {
+        List<LocationHour> locations = LocationHour.listAll(LocationHour.class);
+        if(locations == null || locations.size() == 0) {
+            getLocations();
+        } else {
+            displayLocationsDialog();
+        }
+    }
+
+    public void displayLocationsDialog() {
+        try {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            locationsDialog = new LocationsFragment();
+            locationsDialog.show(fragmentManager, "locations_dialog");
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
     }
 
     public void onItemSelected(AdapterView<?> parent, View view,
@@ -695,14 +723,12 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
 
     }
 
-    private void disableFormElements()
-    {
+    private void disableFormElements() {
         viewIsInEditMode = false;
         setFormElementsState(false);
     }
 
-    private void enableFormElements()
-    {
+    private void enableFormElements() {
         viewIsInEditMode = true;
         setFormElementsState(true);
         showConfirmButton();

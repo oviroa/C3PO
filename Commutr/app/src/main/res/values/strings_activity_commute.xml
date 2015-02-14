@@ -4,6 +4,7 @@
     <string name="commute_date">Commute date:</string>
     <string name="select_commute_date">Commute date</string>
     <string name="select_pickup_arrival">Pickup arrival</string>
+    <string name="select_route">Route</string>
     <string name="pickup_location">Pickup location:</string>
     <string name="drop_off_location">Drop off location:</string>
     <string name="type_of_commuter">Type of commuter</string>

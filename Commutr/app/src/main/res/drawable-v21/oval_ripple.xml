@@ -7,7 +7,7 @@
     <item>
         <shape android:shape="oval">
 
-            <solid android:color="?attr/colorAccent" />
+            <solid android:color="@color/wallet_holo_blue_light" />
 
         </shape>
     </item>

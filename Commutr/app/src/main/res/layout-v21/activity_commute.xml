@@ -15,8 +15,8 @@
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingLeft="@dimen/activity_margin_small"
+            android:paddingRight="@dimen/activity_margin_small"
             android:background="@color/neutral_background">
 
             <LinearLayout
@@ -31,18 +31,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     card_view:cardCornerRadius="4dp"
-                    android:layout_marginTop="@dimen/activity_vertical_margin">
+                    android:layout_marginTop="@dimen/activity_margin_small">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:padding="@dimen/activity_vertical_margin">
+                        android:padding="@dimen/activity_margin_small">
 
                         <ImageView
                             android:id = "@+id/commute_date_label"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
                             android:contentDescription="@string/commute_date"
                             android:src="@drawable/set_commute_date" />
 
@@ -50,11 +51,10 @@
                             android:id="@+id/commute_date_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:layout_toRightOf="@id/commute_date_label"
+                            android:layout_alignParentRight="true"
                             android:layout_alignTop="@id/commute_date_label"
                             android:layout_alignBottom="@id/commute_date_label"
-                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:layout_marginLeft="@dimen/activity_margin_small"
                             android:textAppearance="?android:attr/textAppearanceMedium"/>
 
                         <!--__________________-->
@@ -68,18 +68,17 @@
                             android:layout_alignRight="@id/commute_date_label"
                             android:layout_below="@id/commute_date_label"
                             android:src="@drawable/set_commute_pickup"
-                            android:layout_marginTop="@dimen/activity_vertical_margin"/>
+                            android:layout_marginTop="@dimen/activity_margin_small"/>
 
                         <android.commutr.com.commutr.base.CommutrTextView
                             android:id="@+id/drop_off_location_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Orinda 1"
-                            android:layout_toRightOf="@id/drop_off_location_label"
-                            android:gravity="center"
+                            android:layout_alignParentRight="true"
                             android:layout_alignTop="@id/drop_off_location_label"
                             android:layout_alignBottom="@id/drop_off_location_label"
-                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:layout_marginLeft="@dimen/activity_margin_small"
                             android:textAppearance="?android:attr/textAppearanceMedium"/>
 
                         <!--__________________-->
@@ -93,19 +92,30 @@
                             android:layout_alignRight="@id/commute_date_label"
                             android:layout_below="@id/drop_off_location_label"
                             android:src="@drawable/set_commute_dropoff"
-                            android:layout_marginTop="@dimen/activity_vertical_margin"/>
+                            android:layout_marginTop="@dimen/activity_margin_small"/>
 
                         <android.commutr.com.commutr.base.CommutrTextView
                             android:id="@+id/pickup_location_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Freemont St"
-                            android:layout_toRightOf="@id/pickup_location_label"
-                            android:gravity="center"
+                            android:layout_alignParentRight="true"
                             android:layout_alignTop="@id/pickup_location_label"
                             android:layout_alignBottom="@id/pickup_location_label"
-                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:layout_marginLeft="@dimen/activity_margin_small"
                             android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+                        <android.commutr.com.commutr.base.CommutrButton
+                            android:id="@+id/commute_location_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:onClick="showLocations"
+                            android:text="@string/select_route"
+                            android:textColor="@color/neutral_background"
+                            android:layout_marginTop="@dimen/activity_margin_small"
+                            android:layout_below="@id/pickup_location_value"
+                            android:textStyle="bold"
+                            style="@style/ButtonAppTheme"/>
 
                     </RelativeLayout>
 
@@ -118,7 +128,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     card_view:cardCornerRadius="4dp"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_marginTop="@dimen/activity_margin_small"
                     android:visibility="gone">
 
                     <android.commutr.com.commutr.base.CommutrTextView
@@ -127,7 +137,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:text="@string/requested"
-                        android:padding="@dimen/activity_vertical_margin"
+                        android:padding="@dimen/activity_margin_small"
                         android:textColor="@color/top_bar_background"
                         android:textStyle="bold"
                         android:textAppearance="?android:attr/textAppearanceLarge"/>
@@ -141,15 +151,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     card_view:cardCornerRadius="4dp"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:layout_marginBottom="@dimen/activity_vertical_margin">
+                    android:layout_marginTop="@dimen/activity_margin_small"
+                    android:layout_marginBottom="@dimen/activity_margin_small">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:paddingTop="@dimen/activity_vertical_margin"
-                        android:paddingBottom="@dimen/activity_vertical_margin"
-                        android:padding="@dimen/activity_vertical_margin">
+                        android:padding="@dimen/activity_margin_small">
 
                         <android.commutr.com.commutr.base.CommutrButton
                             android:id="@+id/commute_date_button"
@@ -158,7 +166,6 @@
                             android:text="@string/select_commute_date"
                             android:onClick="showDatePickerDialog"
                             android:textColor="@color/neutral_background"
-                            android:layout_marginTop="@dimen/activity_vertical_margin"
                             android:textStyle="bold"
                             style="@style/ButtonAppTheme"/>
 
@@ -167,7 +174,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_toRightOf="@id/commute_date_button"
-                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:layout_marginLeft="@dimen/activity_margin_small"
                             android:layout_alignParentRight="true"
                             android:gravity="right"
                             android:textAppearance="?android:attr/textAppearanceMedium"
@@ -185,7 +192,7 @@
                             android:textColor="@color/neutral_background"
                             android:textStyle="bold"
                             style="@style/ButtonAppTheme"
-                            android:layout_marginTop="@dimen/activity_vertical_margin"/>
+                            android:layout_marginTop="@dimen/activity_margin_small"/>
 
                         <android.commutr.com.commutr.base.CommutrTextView
                             android:id="@+id/pickup_arrival_value"
@@ -195,7 +202,7 @@
                             android:layout_alignParentRight="true"
                             android:gravity="right"
                             android:layout_toRightOf="@id/pickup_arrival_button"
-                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:layout_marginLeft="@dimen/activity_margin_small"
                             android:textAppearance="?android:attr/textAppearanceMedium"
                             android:layout_alignBaseline="@id/pickup_arrival_button"/>
 
@@ -208,7 +215,7 @@
                             android:layout_height="wrap_content"
                             android:layout_below="@id/pickup_arrival_button"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:layout_marginTop="@dimen/activity_vertical_margin"/>
+                            android:layout_marginTop="@dimen/activity_margin_small"/>
 
                         <Spinner
                             android:id="@+id/commuter_type_spinner"
@@ -228,7 +235,7 @@
                             android:layout_height="wrap_content"
                             android:layout_below="@id/commuter_type_label"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:layout_marginTop="@dimen/activity_vertical_margin"/>
+                            android:layout_marginTop="@dimen/activity_margin_small"/>
 
                         <Spinner
                             android:id="@+id/getting_to_pickup_spinner"
