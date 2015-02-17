@@ -413,6 +413,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                     hideFloatingUI();
                                     enableFormElements();
                                     clearCache();
+                                    clearSelectedLocations();
                                     calculateNextAvailableDate();
                                     displayAdjustedTime();
                                     selectedPickupDateTime = nextAvailableCalendar;

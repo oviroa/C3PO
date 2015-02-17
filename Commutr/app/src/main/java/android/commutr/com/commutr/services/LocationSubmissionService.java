@@ -5,6 +5,7 @@ import android.app.Service;
 import android.commutr.com.commutr.CommutrApp;
 import android.commutr.com.commutr.R;
 import android.commutr.com.commutr.managers.DataManager;
+import android.commutr.com.commutr.model.Commute;
 import android.commutr.com.commutr.model.LocationPoint;
 import android.commutr.com.commutr.utils.Alarms;
 import android.commutr.com.commutr.utils.Installation;
@@ -148,34 +149,42 @@ public class LocationSubmissionService extends Service
     }
 
     private void registerCheckinGeofence() {
-        Logger.warn("FENCE","REGISTERED");
-        TypedValue outValue = new TypedValue();
-        getResources().getValue(R.dimen.default_location_lat, outValue, true);
-        float lat = outValue.getFloat();
-        getResources().getValue(R.dimen.default_location_lon, outValue, true);
-        float lon = outValue.getFloat();
 
-        geofence = new Geofence.Builder()
-                .setRequestId(Integer.toString(0))
-                .setNotificationResponsiveness(10000)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-                        Geofence.GEOFENCE_TRANSITION_EXIT)
-                .setCircularRegion
-                    (
-                        lat,
-                        lon,
-                        getResources().getInteger(R.integer.geofence_radius)
-                    )
-                .setExpirationDuration(Geofence.NEVER_EXPIRE).build();
-        currentGeofences.add(0,geofence);
-        LocationServices.GeofencingApi.
-                addGeofences
-                    (
-                        googleApiClient,
-                        currentGeofences,
-                        getGeoFencePendingIntent()
-                    );
+        Commute commute = DataManager.getInstance().getCachedCommute(getApplicationContext());
+        if(commute != null) {
+            TypedValue outValue = new TypedValue();
+            getResources().getValue(R.dimen.default_location_lat, outValue, true);
+            android.commutr.com.commutr.model.Location location = getPickupLocation(commute.getPickupLocation());
+            float lat = location.getLatitude();
+            float lon = location.getLongitude();
+            geofence = new Geofence.Builder()
+                    .setRequestId(Integer.toString(0))
+                    .setNotificationResponsiveness(10000)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
+                            Geofence.GEOFENCE_TRANSITION_EXIT)
+                    .setCircularRegion
+                            (
+                                    lat,
+                                    lon,
+                                    getResources().getInteger(R.integer.geofence_radius)
+                            )
+                    .setExpirationDuration(Geofence.NEVER_EXPIRE).build();
+            currentGeofences.add(0,geofence);
+            LocationServices.GeofencingApi.
+                    addGeofences
+                            (
+                                    googleApiClient,
+                                    currentGeofences,
+                                    getGeoFencePendingIntent()
+                            );
+        }
+    }
 
+    private android.commutr.com.commutr.model.Location getPickupLocation(String name) {
+        android.commutr.com.commutr.model.Location location =
+                android.commutr.com.commutr.model.Location.find
+                        (android.commutr.com.commutr.model.Location.class, "code=?", name).get(0);
+        return location;
     }
 
     private PendingIntent getGeoFencePendingIntent() {
