@@ -59,10 +59,10 @@
                         <!--__________________-->
 
                         <ImageView
-                            android:id = "@+id/drop_off_location_label"
+                            android:id = "@+id/pickup_location_label"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:contentDescription="@string/drop_off_location"
+                            android:contentDescription="@string/pickup_location"
                             android:layout_alignLeft="@id/commute_date_label"
                             android:layout_alignRight="@id/commute_date_label"
                             android:layout_below="@id/commute_date_label"
@@ -70,49 +70,41 @@
                             android:layout_marginTop="@dimen/activity_margin_small"/>
 
                         <android.commutr.com.commutr.base.CommutrTextView
-                            android:id="@+id/drop_off_location_value"
+                            android:id="@+id/pickup_location_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Orinda 1"
+                            android:hint="@string/select_below"
+                            android:layout_toRightOf="@id/pickup_location_label"
+                            android:gravity="right"
                             android:layout_alignParentRight="true"
-                            android:layout_alignBottom="@id/drop_off_location_label"
+                            android:layout_alignBottom="@id/pickup_location_label"
                             android:layout_marginLeft="@dimen/activity_margin_small"
                             android:textAppearance="?android:attr/textAppearanceMedium"/>
 
                         <!--__________________-->
 
                         <ImageView
-                            android:id = "@+id/pickup_location_label"
+                            android:id = "@+id/drop_off_location_label"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:contentDescription="@string/pickup_location"
                             android:layout_alignLeft="@id/commute_date_label"
                             android:layout_alignRight="@id/commute_date_label"
-                            android:layout_below="@id/drop_off_location_label"
+                            android:layout_below="@id/pickup_location_label"
                             android:src="@drawable/set_commute_dropoff"
                             android:layout_marginTop="@dimen/activity_margin_small"/>
 
                         <android.commutr.com.commutr.base.CommutrTextView
-                            android:id="@+id/pickup_location_value"
+                            android:id="@+id/drop_off_location_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Freemont St"
+                            android:hint="@string/select_below"
+                            android:layout_toRightOf="@id/drop_off_location_label"
+                            android:gravity="right"
                             android:layout_alignParentRight="true"
-                            android:layout_alignBottom="@id/pickup_location_label"
+                            android:layout_alignBottom="@id/drop_off_location_label"
                             android:layout_marginLeft="@dimen/activity_margin_small"
                             android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-                        <android.commutr.com.commutr.base.CommutrButton
-                            android:id="@+id/commute_location_button"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:onClick="showLocations"
-                            android:text="@string/select_route"
-                            android:textColor="@color/neutral_background"
-                            android:layout_marginTop="@dimen/activity_margin_small"
-                            android:layout_below="@id/pickup_location_value"
-                            android:textStyle="bold"
-                            style="@style/ButtonAppTheme"/>
 
                     </RelativeLayout>
 
@@ -206,12 +198,26 @@
 
                         <!--__________________-->
 
+                        <android.commutr.com.commutr.base.CommutrButton
+                            android:id="@+id/commute_location_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:onClick="showLocations"
+                            android:text="@string/select_route"
+                            android:textColor="@color/neutral_background"
+                            android:layout_marginTop="@dimen/activity_margin_small"
+                            android:layout_below="@id/pickup_arrival_button"
+                            android:textStyle="bold"
+                            style="@style/ButtonAppTheme"/>
+
+                        <!--__________________-->
+
                         <android.commutr.com.commutr.base.CommutrTextView
                             android:id = "@+id/commuter_type_label"
                             android:text="@string/type_of_commuter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@id/pickup_arrival_button"
+                            android:layout_below="@id/commute_location_button"
                             android:textAppearance="?android:attr/textAppearanceMedium"
                             android:layout_marginTop="@dimen/activity_margin_small"/>
 

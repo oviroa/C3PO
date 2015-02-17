@@ -4,8 +4,10 @@
     <color name="neutral_background">#FFFFFF</color>
     <integer name="pull_refresh_offset">100</integer>
     <integer name="web_view_load_timeout">13000</integer>
-    <integer name="latest_commute_set_time">8</integer>
-    <integer name="earliest_commute_set_time">7</integer>
+    <integer name="latest_commute_set_time_am">8</integer>
+    <integer name="earliest_commute_set_time_am">7</integer>
+    <integer name="latest_commute_set_time_pm">21</integer>
+    <integer name="earliest_commute_set_time_pm">17</integer>
     <integer name="latest_location_set_time">9</integer>
     <integer name="earliest_location_set_time">6</integer>
     <string name="commutr_preferences">commutrPreferences</string>
@@ -14,6 +16,7 @@
     <string name="commutr_commute_key">commutrCommuteKey</string>
     <string name="commutr_commute_request_status">commutrCommuteRequestStatus</string>
     <string name="commutr_check_in_status">commutrCheckInStatuss</string>
+    <string name="commutr_location_retrieval_timestamp">commutrLocationRetrievalTimestamp</string>
     <string name="default_pickup_location">TEST</string>
     <!--<string name="default_pickup_location">ORND1</string>-->
     <string name="default_dropoff_location">SFFIDI</string>

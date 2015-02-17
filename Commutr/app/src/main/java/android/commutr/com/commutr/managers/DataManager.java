@@ -324,4 +324,20 @@ public class DataManager {
         jsonRequest.setTag(tag);
         queue.add(jsonRequest);
     }
+
+    public void cacheLocationRetrievalTimestamp(Context context) {
+        SharedPreferences settings;
+        SharedPreferences.Editor editor;
+        settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
+        editor = settings.edit();
+        editor.putLong(context.getResources().getString(R.string.commutr_location_retrieval_timestamp), System.currentTimeMillis());
+        editor.commit();
+    }
+
+    public long getCachedLocationRetrievalTimestamp(Context context) {
+        long timestamp = 0;
+        SharedPreferences settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
+        timestamp = settings.getLong(context.getResources().getString(R.string.commutr_location_retrieval_timestamp), 0);
+        return timestamp;
+    }
 }

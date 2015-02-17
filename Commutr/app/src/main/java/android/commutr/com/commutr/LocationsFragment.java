@@ -4,6 +4,7 @@ package android.commutr.com.commutr;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.commutr.com.commutr.adapters.LocationAdapter;
+import android.commutr.com.commutr.managers.LocationHoursManager;
 import android.commutr.com.commutr.model.LocationHour;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import java.util.Calendar;
 import java.util.List;
 
 
@@ -36,18 +38,25 @@ public class LocationsFragment extends DialogFragment {
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         locationList.setLayoutManager(llm);
-        List<LocationHour> locations= LocationHour.listAll(LocationHour.class);
-        LocationAdapter locationAdapter = new LocationAdapter(locations, this);
+        Calendar commuteTime = Calendar.getInstance();
+        commuteTime.setTimeInMillis(getArguments().getLong("commute_time"));
+        List<LocationHour> locations = LocationHoursManager.getOpenLocationHours(commuteTime);
+        LocationAdapter locationAdapter =
+                new LocationAdapter
+                    (
+                        locations,
+                        new RouteIdCallback(){
+                            @Override
+                            public void execute(long id) {
+                                ((CommuteActivity)getActivity()).handleSelectedRoute(id);
+                                LocationsFragment.this.dismiss();
+                            }
+                        }
+                    );
         locationList.setAdapter(locationAdapter);
         builder.setView(view);
         alert = builder.create();
         return alert;
-    }
-
-    public void callback(long id) {
-
-        ((CommuteActivity)getActivity()).handleSelectedRoute(id);
-
     }
 
     @Override
@@ -65,5 +74,10 @@ public class LocationsFragment extends DialogFragment {
 
     public boolean isShown() {
         return isShown;
+    }
+
+
+    public interface RouteIdCallback{
+        void execute(long id);
     }
 }

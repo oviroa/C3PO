@@ -16,11 +16,11 @@ import java.util.List;
 public class LocationAdapter extends RecyclerView.Adapter<LocationViewHolder>{
 
     private List<LocationHour> locationList;
-    private LocationsFragment parentFragment;
+    private LocationsFragment.RouteIdCallback idCallback;
 
-    public LocationAdapter(List<LocationHour> locationList, LocationsFragment parentFragment) {
+    public LocationAdapter(List<LocationHour> locationList, LocationsFragment.RouteIdCallback idCallback) {
         this.locationList = locationList;
-        this.parentFragment = parentFragment;
+        this.idCallback = idCallback;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationViewHolder>{
         locationViewHolder.setClickListener(new LocationItemClickListener() {
             @Override
             public void onClick(View v, int pos, long id) {
-                parentFragment.callback(id);
+                idCallback.execute(id);
             }
         });
     }

@@ -81,7 +81,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     private GoogleApiClient apiClient;
     private CheckInFragment checkInDialog;
     private LocationsFragment locationsDialog;
-
+    private LocationHour selectedRoute;
     /**
      ********************************************************************
      * Activity lifecycle functions
@@ -189,15 +189,32 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
      * ******************************************************************
      */
 
+    public void handleSelectedRoute(long id) {
+        setSelectedRoute(id);
+        displaySelectedPickup();
+        displaySelectedDropOff();
+    }
+
+    private void setSelectedRoute(long id) {
+        selectedRoute = LocationHour.findById(LocationHour.class, id);
+    }
+
     private void confirmCommute() {
         if (ClientUtility.isNetworkAvailable(getApplicationContext())) {
-            disableFormElements();
-            disableConfirmationButton();
-            saveCommute(buildCommute());
-            MixpanelAPI mixpanel =
-                    MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
-            mixpanel.getPeople().identify(mixpanel.getDistinctId());
-            mixpanel.track(getResources().getString(R.string.commute_submitted), null);
+            if(selectedRoute != null) {
+                disableFormElements();
+                disableConfirmationButton();
+                saveCommute(buildCommute());
+                MixpanelAPI mixpanel =
+                        MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+                mixpanel.getPeople().identify(mixpanel.getDistinctId());
+                mixpanel.track(getResources().getString(R.string.commute_submitted), null);
+            }
+            else {
+                DisplayMessenger.showBasicToast
+                        (getApplicationContext(),
+                                getResources().getString(R.string.please_select_route));
+            }
         } else {
             DisplayMessenger.showBasicToast
                     (getApplicationContext(),
@@ -286,6 +303,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                     persistLocations(result);
                                     persistLocationHours(result);
                                     displayLocationsDialog();
+                                    getDataManager().cacheLocationRetrievalTimestamp(getApplicationContext());
                                 }
                             }
                         },
@@ -304,12 +322,18 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
 
     private void persistLocations(JSONObject result) {
         try {
-            Location.deleteAll(Location.class);
+            //Location.deleteAll(Location.class);
             JSONArray locations = result.getJSONArray("location");
             for(int i=0;i<locations.length(); i++) {
                 JSONObject jsonLocation = locations.getJSONObject(i);
                 Gson gson = new Gson();
                 Location location = gson.fromJson(jsonLocation.toString(), Location.class);
+                List<Location> rs = Location.find(Location.class, "code = ?", location.getCode());
+                if(rs.size() > 0) {
+                    Location persitedLocation = rs.get(0);
+
+                }
+
                 location.save();
             }
         } catch (JSONException e) {
@@ -435,8 +459,8 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         myCommute.setDeviceIdentifier(Installation.id(getApplicationContext()));
         myCommute.setTransportModeToPickup(getTransportModeToPickup());
         myCommute.setTransportModeToDropoff(getTransportModeToDropoff());
-        myCommute.setPickupLocation(getResources().getString(R.string.default_pickup_location));
-        myCommute.setDropoffLocation(getResources().getString(R.string.default_dropoff_location));
+        myCommute.setPickupLocation(selectedRoute.getPickupLocation().getCode());
+        myCommute.setDropoffLocation(selectedRoute.getDropoffLocation().getCode());
         myCommute.setScheduledPickupArrivalTime(getScheduledPickupArrivalTime());
         myCommute.setConfirmTime(System.currentTimeMillis() / 1000L);
         myCommute.setCancelTime(0L);
@@ -549,25 +573,25 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         int day = nextAvailableCalendar.get(Calendar.DAY_OF_WEEK);
         if(day == Calendar.SATURDAY){
             nextAvailableCalendar.add(Calendar.DATE, 2);
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time_am));
             nextAvailableCalendar.set(Calendar.MINUTE,0);
         } else if(day == Calendar.SUNDAY) {
             nextAvailableCalendar.add(Calendar.DATE, 1);
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time_am));
             nextAvailableCalendar.set(Calendar.MINUTE,0);
         } //Friday
-        else if(hour >= getResources().getInteger(R.integer.latest_commute_set_time)){
+        else if(hour >= getResources().getInteger(R.integer.latest_commute_set_time_am)){
             if(day == Calendar.FRIDAY){
                 nextAvailableCalendar.add(Calendar.DATE, 3);
-                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
+                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time_am));
                 nextAvailableCalendar.set(Calendar.MINUTE,0);
             } else {
                 nextAvailableCalendar.add(Calendar.DATE, 1);
-                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time));
+                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time_am));
                 nextAvailableCalendar.set(Calendar.MINUTE,0);
             }
         } else {
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY, getResources().getInteger(R.integer.earliest_commute_set_time));
+            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY, getResources().getInteger(R.integer.earliest_commute_set_time_am));
             nextAvailableCalendar.set(Calendar.MINUTE, 0);
         }
     }
@@ -599,8 +623,14 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
      * ******************************************************************
      */
 
-    public void handleSelectedRoute(long id) {
-        Logger.warn("OK DO", " id " + id);
+    private void displaySelectedPickup() {
+        CommutrTextView pickupTextView = (CommutrTextView) findViewById(R.id.pickup_location_value);
+        pickupTextView.setText(selectedRoute.getPickupLocation().getName());
+    }
+
+    private void displaySelectedDropOff() {
+        CommutrTextView dropOffTextView = (CommutrTextView) findViewById(R.id.drop_off_location_value);
+        dropOffTextView.setText(selectedRoute.getDropoffLocation().getName());
     }
 
     private void displayAdjustedTime() {
@@ -617,8 +647,9 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     }
 
     public void showLocations(View v) {
-        List<LocationHour> locations = LocationHour.listAll(LocationHour.class);
-        if(locations == null || locations.size() == 0) {
+        long timestamp = getDataManager().getCachedLocationRetrievalTimestamp(getApplicationContext());
+        long current = System.currentTimeMillis();
+        if(timestamp == 0 || ((current-timestamp)/1000 > 86400)  ){
             getLocations();
         } else {
             displayLocationsDialog();
@@ -629,6 +660,9 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         try {
             FragmentManager fragmentManager = getSupportFragmentManager();
             locationsDialog = new LocationsFragment();
+            Bundle bundle = new Bundle();
+            bundle.putLong("commute_time", selectedPickupDateTime.getTimeInMillis());
+            locationsDialog.setArguments(bundle);
             locationsDialog.show(fragmentManager, "locations_dialog");
         } catch (IllegalStateException e) {
             e.printStackTrace();
@@ -720,7 +754,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
             statusCardView.setVisibility(View.VISIBLE);
             statusCardView.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.abc_fade_in));
         }
-
     }
 
     private void disableFormElements() {
@@ -744,6 +777,8 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         commuterTypeSpinner.setEnabled(enabled);
         Spinner gettingToPickupSpinner = (Spinner) findViewById(R.id.getting_to_pickup_spinner);
         gettingToPickupSpinner.setEnabled(enabled);
+        Button locationsButton = (Button) findViewById(R.id.commute_location_button);
+        locationsButton.setEnabled(enabled);
     }
 
     private void disableConfirmationButton() {
@@ -843,6 +878,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                 DisplayMessenger.showBasicToast(getActivity().getApplicationContext(),
                         getActivity().getResources().getString(R.string.day_out_of_bounds));
             } else {
+                ((CommuteActivity)this.getActivity()).clearSelectedLocations();
                 TextView selectedCommuteDate = (TextView) getActivity().findViewById(R.id.select_commute_date_value);
                 TextView commuteDateValue = (TextView) getActivity().findViewById(R.id.commute_date_value);
                 SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM dd ");
@@ -883,21 +919,32 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             TextView selectetArrivalTime = (TextView) getActivity().findViewById(R.id.pickup_arrival_value);
             SimpleDateFormat sdf = new SimpleDateFormat("h:mm a");
-            if(
-                    hourOfDay < getActivity().getResources().getInteger(R.integer.earliest_commute_set_time)
-                            || hourOfDay >= getActivity().getResources().getInteger(R.integer.latest_commute_set_time)
-                    )
-            {
+            if (
+                    ((hourOfDay < getActivity().getResources().getInteger(R.integer.earliest_commute_set_time_am)
+                            || hourOfDay >= getActivity().getResources().getInteger(R.integer.latest_commute_set_time_am)))
+                            && ((hourOfDay < getActivity().getResources().getInteger(R.integer.earliest_commute_set_time_pm)
+                            || hourOfDay >= getActivity().getResources().getInteger(R.integer.latest_commute_set_time_pm)))
+            ) {
                 DisplayMessenger.showBasicToast(getActivity().getApplicationContext(),
                         getActivity().getResources().getString(R.string.time_out_of_bounds));
-
-                hourOfDay = getActivity().getResources().getInteger(R.integer.earliest_commute_set_time);
+                hourOfDay = getActivity().getResources().getInteger(R.integer.earliest_commute_set_time_am);
                 minute = 0;
             }
+            ((CommuteActivity)this.getActivity()).clearSelectedLocations();
             selectedPickupDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
             selectedPickupDateTime.set(Calendar.MINUTE, minute);
             String selectedTime = sdf.format(selectedPickupDateTime.getTimeInMillis());
             selectetArrivalTime.setText(selectedTime);
+        }
+    }
+
+   public void clearSelectedLocations() {
+        if(selectedRoute != null) {
+            CommutrTextView pickupTextView = (CommutrTextView) findViewById(R.id.pickup_location_value);
+            pickupTextView.setText("");
+            CommutrTextView dropOffTextView = (CommutrTextView) findViewById(R.id.drop_off_location_value);
+            dropOffTextView.setText("");
+            selectedRoute = null;
         }
     }
 
@@ -916,10 +963,20 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         selectedPickupDateTime.setTimeInMillis(cachedArrivalTime);
         setTransportModeToDropoff(commute.getTransportModeToDropoff());
         setTransportModeToPickupSpinner(commute.getTransportModeToPickup());
+        populateRouteNames(commute);
         if(viewIsInEditMode) {
             disableFormElements();
             showFloatingUI();
         }
+    }
+
+    private void populateRouteNames(Commute commute) {
+        Location pickupLocation = Location.find(Location.class, "code = ?", commute.getPickupLocation()).get(0);
+        CommutrTextView pickupTextView = (CommutrTextView) findViewById(R.id.pickup_location_value);
+        pickupTextView.setText(pickupLocation.getName());
+        Location dropoffLocation = Location.find(Location.class, "code = ?", commute.getDropoffLocation()).get(0);
+        CommutrTextView dropOffTextView = (CommutrTextView) findViewById(R.id.drop_off_location_value);
+        dropOffTextView.setText(dropoffLocation.getName());
     }
 
     private void setTransportModeToPickupSpinner(int transportModeToPickup) {

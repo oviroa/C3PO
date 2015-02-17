@@ -42,4 +42,6 @@
     <string name="check_in">Check-In</string>
     <string name="welcome">Welcome!</string>
     <string name="arrived">Looks like you\'ve arrived at Orinda 1. Please Check-In below to get your carpool assignment.</string>
+    <string name="select_below">Select a route below</string>
+    <string name="please_select_route">Please select a route and try again</string>
 </resources>
