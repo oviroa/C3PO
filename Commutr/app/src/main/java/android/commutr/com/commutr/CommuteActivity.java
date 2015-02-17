@@ -882,7 +882,11 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
             int day = nextAvailableCalendar.get(Calendar.DAY_OF_MONTH);
             // Create a new instance of DatePickerDialog and return it
             DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), this, year, month, day);
-            datePickerDialog.getDatePicker().setMinDate(nextAvailableCalendar.getTimeInMillis());
+            try {
+                datePickerDialog.getDatePicker().setMinDate(nextAvailableCalendar.getTimeInMillis() - 1000);
+            } catch (IllegalArgumentException e) {
+                datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+            }
             return datePickerDialog;
         }
 
