@@ -112,7 +112,7 @@ public class LocationHour extends SugarRecord<LocationHour> {
 
     private Calendar translateTimeToStartDay(Calendar calendar) {
         Calendar startCalendar = Calendar.getInstance();
-        startCalendar.setTimeInMillis(this.getStartTime()*100);
+        startCalendar.setTimeInMillis(this.getStartTime()*1000);
         return translateTime(calendar, startCalendar);
     }
 

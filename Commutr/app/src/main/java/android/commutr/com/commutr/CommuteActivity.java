@@ -573,29 +573,46 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         int hour = nextAvailableCalendar.get(Calendar.HOUR_OF_DAY);
         int day = nextAvailableCalendar.get(Calendar.DAY_OF_WEEK);
         if(day == Calendar.SATURDAY){
-            nextAvailableCalendar.add(Calendar.DATE, 2);
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time_am));
-            nextAvailableCalendar.set(Calendar.MINUTE,0);
+            setNextAvailableCalendarFutureDayAM(2);
         } else if(day == Calendar.SUNDAY) {
-            nextAvailableCalendar.add(Calendar.DATE, 1);
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time_am));
-            nextAvailableCalendar.set(Calendar.MINUTE,0);
+            setNextAvailableCalendarFutureDayAM(1);
         } //Friday
         else if(hour >= getResources().getInteger(R.integer.latest_commute_set_time_am)){
             if(day == Calendar.FRIDAY){
-                nextAvailableCalendar.add(Calendar.DATE, 3);
-                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time_am));
-                nextAvailableCalendar.set(Calendar.MINUTE,0);
+                if(hour >= getResources().getInteger(R.integer.latest_commute_set_time_pm)) {
+                    setNextAvailableCalendarFutureDayAM(3);
+                } else {
+                    setNextAvailableCalendarSameDayPM();
+                }
+
             } else {
-                nextAvailableCalendar.add(Calendar.DATE, 1);
-                nextAvailableCalendar.set(Calendar.HOUR_OF_DAY,getResources().getInteger(R.integer.earliest_commute_set_time_am));
-                nextAvailableCalendar.set(Calendar.MINUTE,0);
+                if(hour >= getResources().getInteger(R.integer.latest_commute_set_time_pm)) {
+                    setNextAvailableCalendarFutureDayAM(1);
+                } else {
+                    setNextAvailableCalendarSameDayPM();
+                }
             }
         } else {
-            nextAvailableCalendar.set(Calendar.HOUR_OF_DAY, getResources().getInteger(R.integer.earliest_commute_set_time_am));
-            nextAvailableCalendar.set(Calendar.MINUTE, 0);
+            setNextAvailableCalendarSameDayAM();
         }
     }
+
+    private void setNextAvailableCalendarSameDayAM () {
+        nextAvailableCalendar.set(Calendar.HOUR_OF_DAY, getResources().getInteger(R.integer.earliest_commute_set_time_am));
+        nextAvailableCalendar.set(Calendar.MINUTE, 0);
+    }
+
+    private void setNextAvailableCalendarSameDayPM () {
+        nextAvailableCalendar.set(Calendar.HOUR_OF_DAY, getResources().getInteger(R.integer.earliest_commute_set_time_pm));
+        nextAvailableCalendar.set(Calendar.MINUTE, 0);
+    }
+
+    private void setNextAvailableCalendarFutureDayAM (int offset) {
+        nextAvailableCalendar.add(Calendar.DATE, offset);
+        nextAvailableCalendar.set(Calendar.HOUR_OF_DAY, getResources().getInteger(R.integer.earliest_commute_set_time_am));
+        nextAvailableCalendar.set(Calendar.MINUTE, 0);
+    }
+
 
     public void checkIn(View v) {
         Commute commute = getDataManager().getCachedCommute(getApplicationContext());
