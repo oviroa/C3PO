@@ -33,11 +33,5 @@
     <integer name="activity_type_update_interval">30000</integer>
     <integer name="commute_confirmation_delay">30</integer>
     <integer name="geofence_radius">50</integer>
-    <!--<item name="default_location_lat" format="float" type="dimen">37.8036511</item>-->
-    <!--<item name="default_location_lon" format="float" type="dimen">-122.2716093</item>-->
-    <!--<item name="default_location_lat" format="float" type="dimen">37.810730199999995</item>-->
-    <!--<item name="default_location_lon" format="float" type="dimen">-122.20683469999999</item>-->
-    <item name="default_location_lat" format="float" type="dimen">37.8036511</item>
-    <item name="default_location_lon" format="float" type="dimen">-122.2716093</item>
     <integer name="arrival_offset">900000</integer>
 </resources>

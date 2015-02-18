@@ -153,7 +153,6 @@ public class LocationSubmissionService extends Service
         Commute commute = DataManager.getInstance().getCachedCommute(getApplicationContext());
         if(commute != null) {
             TypedValue outValue = new TypedValue();
-            getResources().getValue(R.dimen.default_location_lat, outValue, true);
             android.commutr.com.commutr.model.Location location = getPickupLocation(commute.getPickupLocation());
             float lat = location.getLatitude();
             float lon = location.getLongitude();
