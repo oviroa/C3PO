@@ -10,6 +10,7 @@ import android.commutr.com.commutr.services.LocationSubmissionService;
 import android.content.Context;
 import android.content.Intent;
 import android.text.format.DateUtils;
+
 import java.util.Calendar;
 
 /**
@@ -90,14 +91,37 @@ public class Alarms {
                 );
     }
 
+    private static int getEarliestAlarm(Context appContext, Calendar commuteCalendar) {
+        int earliestAlarm;
+        int commuteMeridian = commuteCalendar.get(Calendar.AM_PM);
+        if(commuteMeridian == Calendar.AM) {
+            earliestAlarm = appContext.getResources().getInteger(R.integer.earliest_location_set_time_am);
+        } else {
+            earliestAlarm = appContext.getResources().getInteger(R.integer.earliest_location_set_time_pm);
+        }
+        return earliestAlarm;
+    }
+
+    private static int getLatestAlarm(Context appContext, Calendar commuteCalendar) {
+        int latestAlarm;
+        int commuteMeridian = commuteCalendar.get(Calendar.AM_PM);
+        if(commuteMeridian == Calendar.AM) {
+            latestAlarm = appContext.getResources().getInteger(R.integer.latest_location_set_time_am);
+        } else {
+            latestAlarm = appContext.getResources().getInteger(R.integer.latest_location_set_time_pm);
+        }
+        return latestAlarm;
+    }
+
     private static void registerLocationTrackingStart(Context appContext, Calendar commuteCalendar) {
+        int early = getEarliestAlarm(appContext, commuteCalendar);
         Calendar calendarStart = Calendar.getInstance();
         if(DateUtils.isToday(commuteCalendar.getTimeInMillis())){
-            if(calendarStart.get(Calendar.HOUR_OF_DAY) > appContext.getResources().getInteger(R.integer.earliest_location_set_time)){
+            if(calendarStart.get(Calendar.HOUR_OF_DAY) > early){
                 startLocationTrackingService(appContext);
             } else {
                 //start alarm at 6
-                calendarStart.set(Calendar.HOUR_OF_DAY, appContext.getResources().getInteger(R.integer.earliest_location_set_time));
+                calendarStart.set(Calendar.HOUR_OF_DAY, early);
                 calendarStart.set(Calendar.MINUTE,0);
                 calendarStart.set(Calendar.SECOND,0);
                 registerStartAlarm(appContext, calendarStart);
@@ -108,7 +132,7 @@ public class Alarms {
             }
         } else {
             calendarStart = commuteCalendar;
-            calendarStart.set(Calendar.HOUR_OF_DAY, appContext.getResources().getInteger(R.integer.earliest_location_set_time));
+            calendarStart.set(Calendar.HOUR_OF_DAY, early);
             calendarStart.set(Calendar.MINUTE,0);
             calendarStart.set(Calendar.SECOND,0);
             registerStartAlarm(appContext, calendarStart);
@@ -118,11 +142,11 @@ public class Alarms {
 //            calendarStart.set(Calendar.SECOND,0);
 //            registerStartAlarm(appContext, calendarStart);
         }
-
     }
 
     private static void registerLocationTrackingEnd(Context appContext, Calendar commuteCalendar) {
-        commuteCalendar.set(Calendar.HOUR_OF_DAY,appContext.getResources().getInteger(R.integer.latest_location_set_time));
+        int late = getLatestAlarm(appContext, commuteCalendar);
+        commuteCalendar.set(Calendar.HOUR_OF_DAY,late);
         commuteCalendar.set(Calendar.MINUTE,0);
         commuteCalendar.set(Calendar.SECOND,0);
         registerEndAlarm(appContext, commuteCalendar);

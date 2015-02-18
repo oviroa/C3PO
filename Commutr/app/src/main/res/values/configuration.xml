@@ -10,8 +10,8 @@
     <integer name="earliest_commute_set_time_pm">17</integer>
     <integer name="latest_location_set_time_am">9</integer>
     <integer name="earliest_location_set_time_am">6</integer>
-    <integer name="latest_location_set_time_pm">16</integer>
-    <integer name="earliest_location_set_time_pm">22</integer>
+    <integer name="latest_location_set_time_pm">22</integer>
+    <integer name="earliest_location_set_time_pm">16</integer>
     <string name="commutr_preferences">commutrPreferences</string>
     <string name="commutr_email_address">commutrEmailAddress</string>
     <string name="commutr_current_commute">commutrCurrentCommute</string>
