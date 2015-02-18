@@ -311,11 +311,18 @@ public class DataManager {
                                   Listener<JSONObject> listener,
                                   ErrorListener errorListener) {
         int method = (Method.GET);
+        int version = getCachedLocationRetrievalTimestamp(context);
+        String url;
+        if(version != 0) {
+            url = new StringBuilder().append(LOCATIONS_URL).append("?location_version=").append(version).toString();
+        } else {
+            url = LOCATIONS_URL;
+        }
         JsonObjectRequest jsonRequest =
                 new JsonObjectRequest
                         (
                                 method,
-                                LOCATIONS_URL,
+                                url,
                                 null,
                                 listener,
                                 errorListener
@@ -325,19 +332,19 @@ public class DataManager {
         queue.add(jsonRequest);
     }
 
-    public void cacheLocationRetrievalTimestamp(Context context) {
+    public void cacheLocationRetrievalTimestamp(int version, Context context) {
         SharedPreferences settings;
         SharedPreferences.Editor editor;
         settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
         editor = settings.edit();
-        editor.putLong(context.getResources().getString(R.string.commutr_location_retrieval_timestamp), System.currentTimeMillis());
+        editor.putInt(context.getResources().getString(R.string.commutr_location_retrieval_timestamp), version);
         editor.commit();
     }
 
-    public long getCachedLocationRetrievalTimestamp(Context context) {
-        long timestamp = 0;
+    public int getCachedLocationRetrievalTimestamp(Context context) {
+        int timestamp = 0;
         SharedPreferences settings = context.getSharedPreferences(context.getResources().getString(R.string.commutr_preferences), 0);
-        timestamp = settings.getLong(context.getResources().getString(R.string.commutr_location_retrieval_timestamp), 0);
+        timestamp = settings.getInt(context.getResources().getString(R.string.commutr_location_retrieval_timestamp), 0);
         return timestamp;
     }
 }

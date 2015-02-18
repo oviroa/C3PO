@@ -73,6 +73,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     private RequestQueue commuteVolley;
     private final Object TAG = new Object();
     private static Calendar nextAvailableCalendar;
+    private static Calendar minDateCalendar;
     private static Calendar selectedPickupDateTime;
     private boolean viewIsInEditMode = true;
     private int screenOrientation;
@@ -293,18 +294,20 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                         new Listener<JSONObject>() {
                             public void onResponse(JSONObject result) {
                                 setRequestedOrientation(screenOrientation);
-                                swipeView.setRefreshing(false);
                                 if (result.has("error")) {
                                     enableFormElements();
                                     DisplayMessenger.showBasicToast
                                             (getApplicationContext(),
                                                     getResources().getString(R.string.commute_error_message));
                                 } else {
-                                    persistLocations(result);
-                                    persistLocationHours(result);
+                                    if(result.length()!=0) {
+                                        persistLocations(result);
+                                        persistLocationHours(result);
+                                        persistTimestamp(result);
+                                    }
                                     displayLocationsDialog();
-                                    getDataManager().cacheLocationRetrievalTimestamp(getApplicationContext());
                                 }
+                                swipeView.setRefreshing(false);
                             }
                         },
                         new ErrorListener() {
@@ -361,6 +364,15 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                         );
                 locationHour.save();
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void persistTimestamp(JSONObject result) {
+        try {
+            int version = result.getInt("location_version");
+            getDataManager().cacheLocationRetrievalTimestamp(version, getApplicationContext());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -596,6 +608,9 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         } else {
             setNextAvailableCalendarSameDayAM();
         }
+
+        minDateCalendar = Calendar.getInstance();
+        minDateCalendar.setTimeInMillis(nextAvailableCalendar.getTimeInMillis());
     }
 
     private void setNextAvailableCalendarSameDayAM () {
@@ -666,13 +681,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     }
 
     public void showLocations(View v) {
-        long timestamp = getDataManager().getCachedLocationRetrievalTimestamp(getApplicationContext());
-        long current = System.currentTimeMillis();
-        if(timestamp == 0 || ((current-timestamp)/1000 > 86400)  ){
-            getLocations();
-        } else {
-            displayLocationsDialog();
-        }
+        getLocations();
     }
 
     public void displayLocationsDialog() {
@@ -884,9 +893,9 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
             // Create a new instance of DatePickerDialog and return it
             DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), this, year, month, day);
             try {
-                datePickerDialog.getDatePicker().setMinDate(nextAvailableCalendar.getTimeInMillis() - 1000);
+                datePickerDialog.getDatePicker().setMinDate(minDateCalendar.getTimeInMillis());
             } catch (IllegalArgumentException e) {
-                datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+                e.printStackTrace();
             }
             return datePickerDialog;
         }

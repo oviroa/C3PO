@@ -1,7 +1,6 @@
 package android.commutr.com.commutr.model;
 
 import android.commutr.com.commutr.utils.ClientUtility;
-import android.commutr.com.commutr.utils.Logger;
 
 import com.orm.SugarRecord;
 
@@ -113,22 +112,10 @@ public class LocationHour extends SugarRecord<LocationHour> {
         if(startTimestamp >= endTimestamp) {
             return false;
         }
-
         Calendar startLocation = Calendar.getInstance();
         startLocation.setTimeInMillis(this.getStartTime()*1000);
         Calendar endLocation = Calendar.getInstance();
         endLocation.setTimeInMillis(this.getEndTime()*1000);
-
-        Logger.warn("start input", "" + startTime.getTime());
-        Logger.warn("start location", "" + startLocation.getTime());
-        Logger.warn("start input", "" + startTimestamp);
-        Logger.warn("start location", "" + this.getStartTime()*1000);
-        Logger.warn("end input", "" + endTime.getTime());
-        Logger.warn("end location", "" + endLocation.getTime());
-        Logger.warn("start location name", "" + this.getPickupLocation().getCode());
-        Logger.warn("end location name", "" + this.getDropoffLocation().getCode());
-        Logger.warn("--------------------", "-----------------");
-
         return (startTimestamp <= this.getStartTime()*1000 && this.getEndTime()*1000 <= endTimestamp);
     }
 
