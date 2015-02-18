@@ -19,9 +19,6 @@
     <string name="commutr_commute_request_status">commutrCommuteRequestStatus</string>
     <string name="commutr_check_in_status">commutrCheckInStatuss</string>
     <string name="commutr_location_retrieval_timestamp">commutrLocationRetrievalTimestamp</string>
-    <string name="default_pickup_location">TEST</string>
-    <!--<string name="default_pickup_location">ORND1</string>-->
-    <string name="default_dropoff_location">SFFIDI</string>
     <integer name="walking">1</integer>
     <integer name="bike">2</integer>
     <integer name="car">5</integer>
