@@ -322,7 +322,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
 
     private void persistLocations(JSONObject result) {
         try {
-            //Location.deleteAll(Location.class);
+            Location.deleteAll(Location.class);
             JSONArray locations = result.getJSONArray("location");
             for(int i=0;i<locations.length(); i++) {
                 JSONObject jsonLocation = locations.getJSONObject(i);
@@ -350,6 +350,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                 LocationHour locationHour = new LocationHour();
                 locationHour.setStartTime(jsonLocationHour.getLong("start_time"));
                 locationHour.setEndTime(jsonLocationHour.getLong("end_time"));
+                locationHour.setRecurring(jsonLocationHour.getBoolean("recurring"));
                 locationHour.setPickupLocation
                         (
                                 Location.find(Location.class, "code=?", jsonLocationHour.getString("pickup_location")).get(0)

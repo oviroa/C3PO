@@ -23,6 +23,7 @@ public class LocationHoursManager {
         }
         referenceDate.set(Calendar.MINUTE,0);
         referenceDate.set(Calendar.SECOND,0);
+        referenceDate.set(Calendar.MILLISECOND,0);
         return referenceDate;
     }
 
@@ -38,21 +39,19 @@ public class LocationHoursManager {
         }
         referenceDate.set(Calendar.MINUTE,59);
         referenceDate.set(Calendar.SECOND,59);
+        referenceDate.set(Calendar.MILLISECOND,0);
         return referenceDate;
     }
 
-    public static  List<LocationHour> getOpenLocationHours(Calendar commuteTime) {
+    public static  List<LocationHour> getOpenLocationHours(Calendar commuteTime, String userEmail) {
         List<LocationHour> locations= LocationHour.listAll(LocationHour.class);
         List<LocationHour> validLocations = new ArrayList<LocationHour>();
-        for (LocationHour location : locations) {
-            Calendar startCalendar = Calendar.getInstance();
-            startCalendar.setTimeInMillis(location.getStartTime());
-            Calendar endCalendar = Calendar.getInstance();
-            endCalendar.setTimeInMillis(location.getEndTime());
+        for (LocationHour locationHour : locations) {
             Calendar commuteStartDate = commuteStartDate(commuteTime);
             Calendar commuteEndDate = commuteEndDate(commuteTime);
-            if (location.isEnclosedInRange(commuteStartDate, commuteEndDate)){
-                validLocations.add(location);
+            if (locationHour.isEnclosedInRange(commuteStartDate, commuteEndDate)
+                    && locationHour.isVisible(userEmail)){
+                validLocations.add(locationHour);
             }
         }
         return validLocations;

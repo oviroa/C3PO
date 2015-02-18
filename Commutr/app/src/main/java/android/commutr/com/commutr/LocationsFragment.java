@@ -4,6 +4,7 @@ package android.commutr.com.commutr;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.commutr.com.commutr.adapters.LocationAdapter;
+import android.commutr.com.commutr.managers.DataManager;
 import android.commutr.com.commutr.managers.LocationHoursManager;
 import android.commutr.com.commutr.model.LocationHour;
 import android.content.DialogInterface;
@@ -40,7 +41,8 @@ public class LocationsFragment extends DialogFragment {
         locationList.setLayoutManager(llm);
         Calendar commuteTime = Calendar.getInstance();
         commuteTime.setTimeInMillis(getArguments().getLong("commute_time"));
-        List<LocationHour> locations = LocationHoursManager.getOpenLocationHours(commuteTime);
+        String userEmail = DataManager.getInstance().retrieveUserEmail(getActivity().getApplicationContext());
+        List<LocationHour> locations = LocationHoursManager.getOpenLocationHours(commuteTime, userEmail);
         LocationAdapter locationAdapter =
                 new LocationAdapter
                     (

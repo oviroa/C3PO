@@ -7,10 +7,20 @@ import com.orm.SugarRecord;
  */
 public class Location extends SugarRecord<Location> {
 
-    float latitude;
-    float longitude;
-    String code;
-    String name;
+    private float latitude;
+    private float longitude;
+    private String code;
+    private String name;
+    private boolean is_public;
+
+    public boolean isPublic() {
+        return is_public;
+    }
+
+    public void setPublic(boolean isPublic) {
+
+        this.is_public = isPublic;
+    }
 
     public void setLatitude(long latitude) {
         this.latitude = latitude;

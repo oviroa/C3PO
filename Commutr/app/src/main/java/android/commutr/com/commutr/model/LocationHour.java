@@ -1,5 +1,8 @@
 package android.commutr.com.commutr.model;
 
+import android.commutr.com.commutr.utils.ClientUtility;
+import android.commutr.com.commutr.utils.Logger;
+
 import com.orm.SugarRecord;
 
 import java.util.Calendar;
@@ -83,31 +86,50 @@ public class LocationHour extends SugarRecord<LocationHour> {
         return timestamp >= getStartTime() && timestamp <= getEndTime();
     }
 
-
     public boolean isEnclosedInRange(Calendar startTime, Calendar endTime) {
         // end time is before our start time, recurring doesn't go back, so this is an easy NO
-        if(endTime.getTimeInMillis() < startTime.getTimeInMillis()) {
+        if(endTime.getTimeInMillis() < this.getStartTime()*1000) {
             return false;
         }
+
         // not recurring
         if(!this.isRecurring()) {
             return isEnclosedInExactRange(startTime, endTime);
         }
-        // recurring but not the same day of the week, dont even do the math
-        if(startTime.get(Calendar.DAY_OF_MONTH) != startTimeWeekDay()) {
+
+        // recurring but not the same day of the week, don't even do the math
+        if(startTime.get(Calendar.DAY_OF_WEEK) != startTimeWeekDay()) {
             return false;
         }
+
         // translate time to the same day as start and test if they are within bounds
         return isEnclosedInExactRange(translateTimeToStartDay(startTime), translateTimeToStartDay(endTime));
     }
 
     private boolean isEnclosedInExactRange(Calendar startTime, Calendar endTime) {
+
         long startTimestamp = startTime.getTimeInMillis();
         long endTimestamp = endTime.getTimeInMillis();
         if(startTimestamp >= endTimestamp) {
             return false;
         }
-        return startTimestamp <= this.getStartTime()*1000 &&  this.getEndTime()*1000 <= endTimestamp;
+
+        Calendar startLocation = Calendar.getInstance();
+        startLocation.setTimeInMillis(this.getStartTime()*1000);
+        Calendar endLocation = Calendar.getInstance();
+        endLocation.setTimeInMillis(this.getEndTime()*1000);
+
+        Logger.warn("start input", "" + startTime.getTime());
+        Logger.warn("start location", "" + startLocation.getTime());
+        Logger.warn("start input", "" + startTimestamp);
+        Logger.warn("start location", "" + this.getStartTime()*1000);
+        Logger.warn("end input", "" + endTime.getTime());
+        Logger.warn("end location", "" + endLocation.getTime());
+        Logger.warn("start location name", "" + this.getPickupLocation().getCode());
+        Logger.warn("end location name", "" + this.getDropoffLocation().getCode());
+        Logger.warn("--------------------", "-----------------");
+
+        return (startTimestamp <= this.getStartTime()*1000 && this.getEndTime()*1000 <= endTimestamp);
     }
 
     private Calendar translateTimeToStartDay(Calendar calendar) {
@@ -119,6 +141,7 @@ public class LocationHour extends SugarRecord<LocationHour> {
     private Calendar translateTime(Calendar keepHMSTime, Calendar keepYMDTime) {
         keepHMSTime.set(Calendar.YEAR, keepYMDTime.get(Calendar.YEAR));
         keepHMSTime.set(Calendar.MONTH, keepYMDTime.get(Calendar.MONTH));
+        keepHMSTime.set(Calendar.DAY_OF_MONTH, keepYMDTime.get(Calendar.DAY_OF_MONTH));
         return keepHMSTime;
     }
 
@@ -142,5 +165,12 @@ public class LocationHour extends SugarRecord<LocationHour> {
         Calendar startCalendar = Calendar.getInstance();
         startCalendar.setTimeInMillis(this.getStartTime()*1000);
         return startCalendar.get(Calendar.DAY_OF_WEEK);
+    }
+
+    public boolean isVisible(String userEmail) {
+        return ((this.getPickupLocation().isPublic()
+                && this.getDropoffLocation().isPublic())
+                || ClientUtility.isSuperUser(userEmail)
+                );
     }
 }

@@ -28,6 +28,8 @@ import java.util.regex.Pattern;
  */
 public class ClientUtility {
 
+    private static String TEST_DOMAIN = "@getcommutr.com";
+
     /**
      * Returns true if device contected or connecting to the Internet
      * @param context Context
@@ -116,5 +118,9 @@ public class ClientUtility {
             Logger.error("Google Play services","unavailable");
             return false;
         }
+    }
+
+    public static boolean isSuperUser(String email) {
+        return email.contains(TEST_DOMAIN);
     }
 }
