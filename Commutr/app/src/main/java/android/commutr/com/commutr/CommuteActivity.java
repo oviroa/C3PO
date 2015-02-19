@@ -470,7 +470,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
     private Commute buildCommute() {
         Commute myCommute = new Commute();
         myCommute.setEmail(getDataManager().retrieveUserEmail(getApplicationContext()));
-        myCommute.setDeviceIdentifier(Installation.id(getApplicationContext()));
         myCommute.setTransportModeToPickup(getTransportModeToPickup());
         myCommute.setTransportModeToDropoff(getTransportModeToDropoff());
         myCommute.setPickupLocation(selectedRoute.getPickupLocation().getCode());
@@ -478,6 +477,7 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         myCommute.setScheduledPickupArrivalTime(getScheduledPickupArrivalTime());
         myCommute.setConfirmTime(System.currentTimeMillis() / 1000L);
         myCommute.setCancelTime(0L);
+        myCommute.setDeviceIdentifier(Installation.id(getApplicationContext()));
         return myCommute;
     }
 

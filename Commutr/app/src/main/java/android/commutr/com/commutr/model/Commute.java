@@ -51,8 +51,9 @@ public class Commute implements Serializable
         this.device_identifier = device_identifier;
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd a");
         Calendar calendar = Calendar.getInstance();
-        String currentDate = sdf.format(calendar.getTimeInMillis());
-        this.unique_id = device_identifier + "|" + currentDate;
+        calendar.setTimeInMillis(this.getScheduledPickupArrivalTime()*1000);
+        String commuteTime = sdf.format(calendar.getTimeInMillis());
+        this.unique_id = device_identifier + "|" + commuteTime;
     }
 
     public void setEmail(String email) {
