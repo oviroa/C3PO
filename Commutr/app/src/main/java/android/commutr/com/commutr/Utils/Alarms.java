@@ -20,15 +20,12 @@ import java.util.Calendar;
 public class Alarms {
 
     public static void registerLocationAlarms(Context appContext, Calendar commuteCalendar) {
-        unRegisterLocationAlarms(appContext);
-        stopActivityRecognition(appContext);
-        registerLocationTrackingStart(appContext, commuteCalendar);
-        registerLocationTrackingEnd(appContext, commuteCalendar);
+          registerLocationTrackingStart(appContext, commuteCalendar);
+          registerLocationTrackingEnd(appContext, commuteCalendar);
     }
 
     public static void unRegisterLocationAlarms(Context appContext) {
         stopLocationTrackingService(appContext);
-        stopActivityRecognition(appContext);
         unregisterLocationTrackingStart(appContext);
         unregisterLocationTrackingEnd(appContext);
     }

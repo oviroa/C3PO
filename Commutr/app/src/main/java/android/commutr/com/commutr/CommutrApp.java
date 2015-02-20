@@ -2,7 +2,6 @@ package android.commutr.com.commutr;
 
 import android.commutr.com.commutr.model.Commute;
 
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
 import com.orm.SugarApp;
 
@@ -29,8 +28,6 @@ public class CommutrApp extends SugarApp {
     public static final String CHECK_IN_EVENT = "check_in_event";
     public static final String DISCONNECT = "disconnect";
     public static String activityType = "N/A";
-    private GoogleApiClient googleApiClient;
-    private  GoogleApiClient activityRecognitionClient;
     private String commuteKey;
     private String requestState;
     private String checkInState;
@@ -69,22 +66,6 @@ public class CommutrApp extends SugarApp {
     public void setCommuteKey(String commuteKey) {
 
         this.commuteKey = commuteKey;
-    }
-
-    public GoogleApiClient getGoogleApiClient() {
-        return googleApiClient;
-    }
-
-    public GoogleApiClient getActivityRecognitionClient() {
-        return activityRecognitionClient;
-    }
-
-    public void setGoogleApiClient(GoogleApiClient googleApiClient) {
-        this.googleApiClient = googleApiClient;
-    }
-
-    public void setActivityRecognitionClient(GoogleApiClient activityRecognitionClient) {
-        this.activityRecognitionClient = activityRecognitionClient;
     }
 
     public String getUserEmail(){

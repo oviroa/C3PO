@@ -15,7 +15,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.TypedValue;
-
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -46,30 +45,69 @@ public class LocationSubmissionService extends Service
     private final Object TAG = new Object();
     private LocationRequest locationRequest;
     private GoogleApiClient googleApiClient;
+    private boolean isDisconnecting = false;
 
     public LocationSubmissionService(){
     }
 
     @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        MixpanelAPI mixpanel =
+                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
+        mixpanel.getPeople().identify(mixpanel.getDistinctId());
+        switch(intent.getStringExtra(CommutrApp.ACTION_TYPE)) {
+             case CommutrApp.CONNECT:
+                 isDisconnecting = false;
+                 Alarms.startActivityRecognition(getApplicationContext());
+                 mixpanel.track(getResources().getString(R.string.location_monitoring_started), null);
+                 break;
+            case CommutrApp.DISCONNECT:
+                 isDisconnecting = true;
+                 Alarms.stopActivityRecognition(getApplicationContext());
+                 mixpanel.track(getResources().getString(R.string.location_monitoring_stopped), null);
+                 break;
+        }
+        initiateLocationClient();
+        return Service.START_REDELIVER_INTENT;
+    }
+
+    private void initiateLocationClient() {
+        if(googleApiClient == null) {
+            googleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
+        if(isDisconnecting && googleApiClient.isConnected()) {
+            disconnectLocationClient();
+        }
+        else if(!googleApiClient.isConnected() && !googleApiClient.isConnecting()) {
+            googleApiClient.connect();
+        }
+    }
+
+    private void disconnectLocationClient() {
+        unregisterCheckinGeofence();
+        LocationServices.FusedLocationApi
+                .removeLocationUpdates(googleApiClient, this);
+        googleApiClient.disconnect();
+        googleApiClient = null;
+        stopSelf();
+    }
+
+    @Override
     public void onConnected(Bundle bundle) {
-        Logger.warn("CONN","ECTED");
-        googleApiClient = ((CommutrApp)getApplicationContext()).getGoogleApiClient();
         locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         locationRequest.setInterval(getApplicationContext().getResources().getInteger(R.integer.location_update_interval));
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 googleApiClient, locationRequest, this);
         registerCheckinGeofence();
-    }
-
-    @Override
-    public IBinder onBind(Intent arg0) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
     }
 
     @Override
@@ -94,7 +132,7 @@ public class LocationSubmissionService extends Service
                         new Response.ErrorListener() {
                             public void onErrorResponse(VolleyError error) {
                                 error.printStackTrace();
-                           }
+                            }
                         }
                 );
     }
@@ -111,45 +149,7 @@ public class LocationSubmissionService extends Service
         return point;
     }
 
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        MixpanelAPI mixpanel =
-                MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
-        mixpanel.getPeople().identify(mixpanel.getDistinctId());
-        switch(intent.getStringExtra(CommutrApp.ACTION_TYPE)) {
-             case CommutrApp.CONNECT:
-                 ((CommutrApp)getApplicationContext()).setGoogleApiClient( new GoogleApiClient.Builder(this)
-                    .addApi(LocationServices.API)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build());
-                 ((CommutrApp)getApplicationContext()).getGoogleApiClient().connect();
-                 Alarms.startActivityRecognition(getApplicationContext());
-                 mixpanel.track(getResources().getString(R.string.location_monitoring_started), null);
-                 break;
-            case CommutrApp.DISCONNECT:
-                 if(((CommutrApp)getApplicationContext()).getGoogleApiClient() != null
-                         && ((CommutrApp)getApplicationContext()).getGoogleApiClient().isConnected()) {
-                     unregisterCheckinGeofence();
-                     LocationServices.FusedLocationApi
-                             .removeLocationUpdates(((CommutrApp) getApplicationContext()).getGoogleApiClient(), this);
-                     ((CommutrApp)getApplicationContext()).getGoogleApiClient().disconnect();
-                     ((CommutrApp)getApplicationContext()).setGoogleApiClient(null);
-                 }
-                 Alarms.stopActivityRecognition(getApplicationContext());
-                 mixpanel.track(getResources().getString(R.string.location_monitoring_stopped), null);
-                 stopSelf();
-                 break;
-         }
-        return Service.START_REDELIVER_INTENT;
-    }
-
     private void registerCheckinGeofence() {
-
         Commute commute = DataManager.getInstance().getCachedCommute(getApplicationContext());
         if(commute != null) {
             TypedValue outValue = new TypedValue();
@@ -198,9 +198,16 @@ public class LocationSubmissionService extends Service
     }
 
     private void unregisterCheckinGeofence() {
-        Logger.warn("FENCE","UN-REGISTERED");
-        LocationServices.GeofencingApi.removeGeofences(((CommutrApp)getApplicationContext()).getGoogleApiClient(),
+        LocationServices.GeofencingApi.removeGeofences(googleApiClient,
                 getGeoFencePendingIntent());
     }
 
+    @Override
+    public IBinder onBind(Intent arg0) {
+        return null;
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+    }
 }

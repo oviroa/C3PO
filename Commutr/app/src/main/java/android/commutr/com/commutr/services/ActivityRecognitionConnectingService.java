@@ -1,11 +1,13 @@
 package android.commutr.com.commutr.services;
 
-import android.app.IntentService;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.commutr.com.commutr.CommutrApp;
 import android.commutr.com.commutr.R;
+import android.commutr.com.commutr.utils.Logger;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.IBinder;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -16,13 +18,15 @@ import com.mixpanel.android.mpmetrics.MixpanelAPI;
 /**
  * Created by oviroa on 2/5/15.
  */
-public class ActivityRecognitionConnectingService extends IntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class ActivityRecognitionConnectingService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     //pending intent
     private PendingIntent activityRecognitionPendingIntent;
+    private GoogleApiClient activityRecognitionClient;
+    private boolean isDisconnecting = false;
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         MixpanelAPI mixpanel =
                 MixpanelAPI.getInstance(getApplicationContext(), getResources().getString(R.string.mixpanel_token));
         //create intent
@@ -30,72 +34,65 @@ public class ActivityRecognitionConnectingService extends IntentService implemen
         activityRecognitionPendingIntent = PendingIntent.getService(getApplicationContext(), 0, recognitionIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         switch(intent.getStringExtra(CommutrApp.ACTION_TYPE)) {
             case CommutrApp.CONNECT:
-                connectActivityRecognitionClient();
                 mixpanel.track(getResources().getString(R.string.activity_monitoring_started), null);
                 break;
             case CommutrApp.DISCONNECT:
-                disconnectActivityRecognitionClient();
+                isDisconnecting = true;
                 mixpanel.track(getResources().getString(R.string.activity_monitoring_stopped), null);
                 break;
         }
+        initiateActivityRecognitionClient();
+        return Service.START_REDELIVER_INTENT;
     }
 
-    private void connectActivityRecognitionClient() {
-        if (((CommutrApp)getApplicationContext()).getActivityRecognitionClient() == null
-                || (((CommutrApp)getApplicationContext()).getActivityRecognitionClient() != null
-                && !((CommutrApp)getApplicationContext()).getActivityRecognitionClient().isConnected())) {
-            ((CommutrApp)getApplicationContext()).setActivityRecognitionClient( new GoogleApiClient.Builder(this)
+    private void initiateActivityRecognitionClient() {
+        if(activityRecognitionClient == null ) {
+            activityRecognitionClient =  new GoogleApiClient.Builder(this)
                     .addApi(ActivityRecognition.API)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
-                    .build());
-            //connect if not connected
-            if (!(((CommutrApp)getApplicationContext()).getActivityRecognitionClient().isConnected()
-                    || ((CommutrApp)getApplicationContext()).getActivityRecognitionClient().isConnecting())) {
-                ((CommutrApp)getApplicationContext()).getActivityRecognitionClient().connect();
-            }
+                    .build();
+        }
+        if(isDisconnecting && activityRecognitionClient.isConnected()) {
+            disconnectActivityRecognitionClient();
+        } else if(!activityRecognitionClient.isConnected() && !activityRecognitionClient.isConnecting()) {
+            activityRecognitionClient.connect();
         }
     }
-
 
     private void disconnectActivityRecognitionClient() {
-        if (((CommutrApp)getApplicationContext()).getActivityRecognitionClient() != null
-                &&((CommutrApp)getApplicationContext()).getActivityRecognitionClient().isConnected()) {
-            ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(((CommutrApp)getApplicationContext()).getActivityRecognitionClient()
-                    , activityRecognitionPendingIntent);
-            ((CommutrApp)getApplicationContext()).getActivityRecognitionClient().disconnect();
-            ((CommutrApp)getApplicationContext()).setActivityRecognitionClient(null);
-            activityRecognitionPendingIntent.cancel();
-            activityRecognitionPendingIntent = null;
-        }
+        ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(activityRecognitionClient, activityRecognitionPendingIntent);
+        activityRecognitionClient.disconnect();
+        activityRecognitionClient = null;
+        activityRecognitionPendingIntent.cancel();
+        activityRecognitionPendingIntent = null;
         stopSelf();
-    }
-
-
-    public ActivityRecognitionConnectingService() {
-        super("ActivityRecognitionConnectingService");
     }
 
     //client
     @Override
     public void onConnected(Bundle bundle) {
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(((CommutrApp)getApplicationContext()).getActivityRecognitionClient(),
-                getApplicationContext().getResources().getInteger(R.integer.activity_type_update_interval),
-                activityRecognitionPendingIntent);
-        stopSelf();
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(activityRecognitionClient,
+                    getApplicationContext().getResources().getInteger(R.integer.activity_type_update_interval),
+                    activityRecognitionPendingIntent);
     }
 
     @Override
     public void onConnectionSuspended(int i) {
     }
 
-
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
     }
 
     @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
+        Logger.warn("AR service","disconnected");
     }
 }

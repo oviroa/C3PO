@@ -124,7 +124,6 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
         {
             populateUIWithCommute(currentCommute);
             String state = getDataManager().getCachedCommuteRequestStatus(getApplicationContext());
-            Logger.warn("handle", "me " + state);
             if(state != null) {
                 int id = getResources().getIdentifier(state, "string", "android.commutr.com.commutr");
                 handleReservationStateDisplay(getResources().getString(id));
