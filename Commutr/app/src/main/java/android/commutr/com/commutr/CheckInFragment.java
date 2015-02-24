@@ -26,8 +26,6 @@ public class CheckInFragment extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         builder.setView(inflater.inflate(R.layout.dialog_check_in, null));
         alert = builder.create();
-        //alert.setCanceledOnTouchOutside(false);
-        //setCancelable(false);
         return alert;
     }
 

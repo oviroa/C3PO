@@ -122,24 +122,32 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                         )
                 )
         {
-            populateUIWithCommute(currentCommute);
-            String state = getDataManager().getCachedCommuteRequestStatus(getApplicationContext());
-            if(state != null) {
-                int id = getResources().getIdentifier(state, "string", "android.commutr.com.commutr");
-                handleReservationStateDisplay(getResources().getString(id));
-            }
+            handleResumeWhenCommutePresent(currentCommute);
         } else {
-            clearCache();
-            calculateNextAvailableDate();
-            displayAdjustedTime();
-            selectedPickupDateTime = nextAvailableCalendar;
-            if(!viewIsInEditMode) {
-                enableFormElements();
-                hideFloatingUI();
-            }
+            handleResumeWhenCommuteNotPresent();
         }
         if(getDataManager().getCachedCheckInStatus(getApplicationContext()) != null) {
             showCheckinDialog();
+        }
+    }
+
+    private void handleResumeWhenCommutePresent(Commute currentCommute) {
+        populateUIWithCommute(currentCommute);
+        String state = getDataManager().getCachedCommuteRequestStatus(getApplicationContext());
+        if(state != null) {
+            int id = getResources().getIdentifier(state, "string", "android.commutr.com.commutr");
+            handleReservationStateDisplay(getResources().getString(id));
+        }
+    }
+
+    private void handleResumeWhenCommuteNotPresent() {
+        clearCache();
+        calculateNextAvailableDate();
+        displayAdjustedTime();
+        selectedPickupDateTime = nextAvailableCalendar;
+        if(!viewIsInEditMode) {
+            enableFormElements();
+            hideFloatingUI();
         }
     }
 
@@ -246,21 +254,9 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                                 } else {
                                     getDataManager().cacheCommute(commute, getApplicationContext());
                                     if(checkInDialog != null && checkInDialog.isShown()){
-                                        checkInDialog.dismiss();
-                                        checkInDialog = null;
-                                        getDataManager().cacheCheckInStatus(null,getApplicationContext());
-                                        DisplayMessenger.showBasicToast
-                                                (getApplicationContext(),
-                                                        getResources().getString(R.string.commute_check_in_message));
+                                        handleCommuteCheckInStore();
                                     } else {
-                                        DisplayMessenger.showBasicToast
-                                                (getApplicationContext(),
-                                                        getResources().getString(R.string.commute_confirmed_message));
-                                        showFloatingUI();
-                                        handleReservationStateDisplay(getResources().getString(R.string.requested));
-                                        getDataManager().cacheCommuteRequestStatus(CommutrApp.REQUEST_REQUESTED,getApplicationContext());
-                                        registerLocationAlarms();
-                                        handleCommuteRequestResponse(result, commute);
+                                        handleCommuteStore(result, commute);
                                     }
                                 }
                             }
@@ -277,6 +273,27 @@ public class CommuteActivity extends BaseActivity implements OnItemSelectedListe
                         }
                 );
     }
+
+    private void handleCommuteCheckInStore() {
+        checkInDialog.dismiss();
+        checkInDialog = null;
+        getDataManager().cacheCheckInStatus(null,getApplicationContext());
+        DisplayMessenger.showBasicToast
+                (getApplicationContext(),
+                        getResources().getString(R.string.commute_check_in_message));
+    }
+
+    private void handleCommuteStore(JSONObject result, Commute commute) {
+        DisplayMessenger.showBasicToast
+                (getApplicationContext(),
+                        getResources().getString(R.string.commute_confirmed_message));
+        showFloatingUI();
+        handleReservationStateDisplay(getResources().getString(R.string.requested));
+        getDataManager().cacheCommuteRequestStatus(CommutrApp.REQUEST_REQUESTED,getApplicationContext());
+        registerLocationAlarms();
+        handleCommuteRequestResponse(result, commute);
+    }
+
 
     private void getLocations() {
 

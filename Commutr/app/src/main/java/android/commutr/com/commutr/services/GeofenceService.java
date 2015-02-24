@@ -69,16 +69,24 @@ public class GeofenceService extends IntentService
         } else {
             int transitionType = geoFenceEvent.getGeofenceTransition();
             if (Geofence.GEOFENCE_TRANSITION_ENTER == transitionType) {
-                Logger.warn("Pickup Geofence", "ENTER");
-                Intent checkInIntent = new Intent(CommutrApp.CHECK_IN_EVENT);
-                DataManager.getInstance().cacheCheckInStatus("in",getApplicationContext());
-                sendBroadcast(checkInIntent);
-                showGeofenceEnterNotification();
+                handleGeofenceEnter();
             } else if (Geofence.GEOFENCE_TRANSITION_EXIT == transitionType) {
-                Logger.warn("Pickup Geofence", "EXIT");
-                DataManager.getInstance().cacheCheckInStatus(null,getApplicationContext());
+                handleGeofenceExit();
             }
         }
+    }
+
+    private void handleGeofenceEnter() {
+        Logger.warn("Pickup Geofence", "ENTER");
+        Intent checkInIntent = new Intent(CommutrApp.CHECK_IN_EVENT);
+        DataManager.getInstance().cacheCheckInStatus("in",getApplicationContext());
+        sendBroadcast(checkInIntent);
+        showGeofenceEnterNotification();
+    }
+
+    private void handleGeofenceExit() {
+        Logger.warn("Pickup Geofence", "EXIT");
+        DataManager.getInstance().cacheCheckInStatus(null,getApplicationContext());
     }
 
     @Override

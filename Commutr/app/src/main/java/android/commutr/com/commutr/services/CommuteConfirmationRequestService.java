@@ -87,23 +87,24 @@ public class CommuteConfirmationRequestService extends IntentService {
                 if(commute.has("system_waitlist_timestamp")) {
                     systemWaitlistTime = (int)commute.get("system_waitlist_timestamp");
                 }
-                Intent requestIntent = new Intent(CommutrApp.REQUEST_CONFIRMATION_EVENT);
+
                 if(confirmTime > 0 && systemConfirmTime > 0) {
-                    DataManager.getInstance().cacheCommuteRequestStatus(CommutrApp.REQUEST_CONFIRMED, getApplicationContext());
-                    requestIntent.putExtra(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_CONFIRMED);
-                    sendBroadcast(requestIntent);
+                    broadcastStatus(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_CONFIRMED, CommutrApp.REQUEST_CONFIRMATION_EVENT);
                 } else if (cancelTime > 0 || systemCancelTime > 0) {
-                    DataManager.getInstance().cacheCommuteRequestStatus(CommutrApp.REQUEST_CANCELLED, getApplicationContext());
-                    requestIntent.putExtra(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_CANCELLED);
-                    sendBroadcast(requestIntent);
+                    broadcastStatus(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_CANCELLED, CommutrApp.REQUEST_CONFIRMATION_EVENT);
                 } else if (systemWaitlistTime > 0) {
-                    DataManager.getInstance().cacheCommuteRequestStatus(CommutrApp.REQUEST_WAITLISTED, getApplicationContext());
-                    requestIntent.putExtra(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_WAITLISTED);
-                    sendBroadcast(requestIntent);
+                    broadcastStatus(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_WAITLISTED, CommutrApp.REQUEST_CONFIRMATION_EVENT);
                 }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void broadcastStatus(String label, String value, String event) {
+        Intent requestIntent = new Intent(event);
+        DataManager.getInstance().cacheCommuteRequestStatus(value, getApplicationContext());
+        requestIntent.putExtra(label, value);
+        sendBroadcast(requestIntent);
     }
 }
