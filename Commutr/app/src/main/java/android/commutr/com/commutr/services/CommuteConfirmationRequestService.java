@@ -4,12 +4,15 @@ import android.app.IntentService;
 import android.commutr.com.commutr.CommutrApp;
 import android.commutr.com.commutr.R;
 import android.commutr.com.commutr.managers.DataManager;
+import android.commutr.com.commutr.utils.Alarms;
 import android.commutr.com.commutr.utils.Logger;
 import android.content.Intent;
+
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,6 +27,7 @@ public class CommuteConfirmationRequestService extends IntentService {
     }
     private RequestQueue commuteVolley;
     private final Object TAG = new Object();
+    private int retryCount = 0;
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -95,9 +99,17 @@ public class CommuteConfirmationRequestService extends IntentService {
                 } else if (systemWaitlistTime > 0) {
                     broadcastStatus(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_WAITLISTED, CommutrApp.REQUEST_CONFIRMATION_EVENT);
                 }
+                retryCount = 0;
             }
         } catch (JSONException e) {
             e.printStackTrace();
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+            //try again, 3 times
+            if(retryCount < 3 ) {
+                Alarms.registerCommuteConfirmationRequest(getApplicationContext());
+                retryCount++;
+            }
         }
     }
 
