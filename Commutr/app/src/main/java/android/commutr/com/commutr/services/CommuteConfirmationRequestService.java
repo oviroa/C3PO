@@ -27,7 +27,7 @@ public class CommuteConfirmationRequestService extends IntentService {
     }
     private RequestQueue commuteVolley;
     private final Object TAG = new Object();
-    private int retryCount = 0;
+    private static int retryCount = 0;
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -77,13 +77,13 @@ public class CommuteConfirmationRequestService extends IntentService {
             if(response.has("commute")) {
                 commute = response.getJSONObject("commute");
                 if(commute.has("confirm_timestamp")) {
-                    confirmTime = (double)commute.get("confirm_timestamp");
+                    confirmTime = (Integer)commute.get("confirm_timestamp");
                 }
                 if(commute.has("system_confirm_timestamp")) {
-                    systemConfirmTime  = (double)commute.get("system_confirm_timestamp");
+                    systemConfirmTime  = (double)(int)commute.get("system_confirm_timestamp");
                 }
                 if(commute.has("cancel_timestamp")) {
-                    cancelTime = (double)commute.get("cancel_timestamp");
+                    cancelTime = (double)(int)commute.get("cancel_timestamp");
                 }
                 if(commute.has("system_cancel_timestamp")) {
                     systemCancelTime = (int)commute.get("system_cancel_timestamp");
@@ -91,7 +91,6 @@ public class CommuteConfirmationRequestService extends IntentService {
                 if(commute.has("system_waitlist_timestamp")) {
                     systemWaitlistTime = (int)commute.get("system_waitlist_timestamp");
                 }
-
                 if(confirmTime > 0 && systemConfirmTime > 0) {
                     broadcastStatus(CommutrApp.REQUEST_CONFIRMATION_STATE, CommutrApp.REQUEST_CONFIRMED, CommutrApp.REQUEST_CONFIRMATION_EVENT);
                 } else if (cancelTime > 0 || systemCancelTime > 0) {
@@ -105,8 +104,8 @@ public class CommuteConfirmationRequestService extends IntentService {
             e.printStackTrace();
         } catch (ClassCastException e) {
             e.printStackTrace();
-            //try again, 3 times
-            if(retryCount < 3 ) {
+            //try again, 5 times
+            if(retryCount < 5 ) {
                 Alarms.registerCommuteConfirmationRequest(getApplicationContext());
                 retryCount++;
             }
