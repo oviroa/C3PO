@@ -254,7 +254,7 @@ public class DataManager {
                         (
                                 method,
                                 new StringBuilder().append(COMMUTE_CONFIRMATION_URL).append(key).toString(),
-                                null,
+                                (JSONObject)null,
                                 listener,
                                 errorListener
                         );
@@ -323,7 +323,7 @@ public class DataManager {
                         (
                                 method,
                                 url,
-                                null,
+                                (JSONObject)null,
                                 listener,
                                 errorListener
                         );

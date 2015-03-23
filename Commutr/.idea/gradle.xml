@@ -8,8 +8,8 @@
         <option name="gradleHome" value="$APPLICATION_HOME_DIR$/gradle/gradle-2.2.1" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="/var/host/media/removable/UNTITLED/Dev/Commutr/Android/C3PO/Commutr" />
+            <option value="/var/host/media/removable/UNTITLED/Dev/Commutr/Android/C3PO/Commutr/app" />
           </set>
         </option>
       </GradleProjectSettings>
