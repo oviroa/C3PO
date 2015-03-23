@@ -10,6 +10,7 @@ public class Identity implements Serializable {
     private String email;
     private String version;
     private String identifier;
+    private String phone;
 
     public void setEmail(String email) {
         this.email = email;
@@ -25,6 +26,15 @@ public class Identity implements Serializable {
 
     public String getEmail() {
         return email;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getPhone() {
+
+        return phone;
     }
 
     public String getVersion() {
